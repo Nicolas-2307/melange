@@ -76,6 +76,10 @@ Zod al arrancar: si falta alguna, la app no inicia y te dice cuál. Variables po
 | `npm run typecheck`               | Verificación de tipos                          |
 | `npm test` / `test:watch`         | Pruebas unitarias (Vitest)                     |
 | `npm run test:e2e`                | Pruebas e2e (Playwright)                       |
+| `npm run db:migrate`              | Crea y aplica una migración (desarrollo)       |
+| `npm run db:deploy`               | Aplica migraciones pendientes (producción)     |
+| `npm run db:seed`                 | Carga productos de ejemplo                     |
+| `npm run db:studio`               | Explorador visual de la base de datos          |
 
 ## Estructura de carpetas
 

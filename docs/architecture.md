@@ -37,4 +37,28 @@ Reglas:
 - `admin`: panel del dueño, protegido por rol `ADMIN` en el servidor.
 - `api`: webhooks (Wompi) y endpoints.
 
-> Este documento se amplía en cada paso (modelo de datos en el Paso 2, auth en el Paso 3…).
+## Modelo de datos
+
+Fuente de verdad: [`prisma/schema.prisma`](../prisma/schema.prisma). Montos en COP como enteros.
+
+```mermaid
+erDiagram
+  User ||--o| Cart : "tiene"
+  User ||--o{ Order : "hace"
+  Category ||--o{ Product : "agrupa"
+  Product ||--|{ ProductVariant : "se vende como"
+  Product ||--o{ ProductImage : "muestra"
+  Cart ||--o{ CartItem : "contiene"
+  ProductVariant ||--o{ CartItem : ""
+  Order ||--|{ OrderItem : "incluye"
+  ProductVariant |o--o{ OrderItem : ""
+  Order ||--o{ Payment : "se paga con"
+```
+
+- **Variantes:** cada producto se vende en una o más variantes con precio propio (8 o 16 porciones, caja x6 o x12).
+- **Invitados:** el carrito de un invitado se identifica con una cookie; el pedido guarda nombre, correo y teléfono, y `userId` es opcional.
+- **Snapshot:** `OrderItem` copia nombre y precio al comprar; cambiar un producto no altera pedidos pasados.
+- **Pagos:** un `Payment` por intento (Wompi exige una referencia única por transacción).
+- **Entrega:** `DELIVERY` (con dirección y costo de envío) o `PICKUP`, con fecha de entrega.
+
+> Este documento se amplía en cada paso (auth en el Paso 3…).

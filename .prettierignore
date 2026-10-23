@@ -6,3 +6,4 @@ playwright-report
 prisma/migrations
 package-lock.json
 CHANGELOG.md
+src/generated

@@ -9,6 +9,9 @@ import { z } from "zod";
 const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 
+  // Pooled connection (host with "-pooler") used by the app at runtime.
+  DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+
   // Provider selection: swap providers by config, not code.
   PAYMENT_PROVIDER: z.enum(["whatsapp", "wompi"]).default("whatsapp"),
   STORAGE_PROVIDER: z.enum(["cloudinary"]).default("cloudinary"),
