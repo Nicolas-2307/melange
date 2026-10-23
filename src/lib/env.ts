@@ -6,11 +6,27 @@ import { z } from "zod";
  * Add each new variable here AND in .env.example (and docs/deployment.md).
  */
 
+// Treat `VAR=` (empty) in .env files as "not set".
+const optional = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (value === "" ? undefined : value), schema.optional());
+
 const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 
   // Pooled connection (host with "-pooler") used by the app at runtime.
   DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+
+  // Signs session cookies and tokens. At least 32 random characters.
+  BETTER_AUTH_SECRET: z.string().min(32, "Debe tener al menos 32 caracteres aleatorios"),
+  // Comma-separated list. Each account becomes ADMIN once its email is verified.
+  ADMIN_EMAILS: optional(z.string())
+    .transform((value) =>
+      (value ?? "")
+        .split(",")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    )
+    .pipe(z.array(z.email("Cada correo de ADMIN_EMAILS debe ser válido"))),
 
   // Provider selection: swap providers by config, not code.
   PAYMENT_PROVIDER: z.enum(["whatsapp", "wompi"]).default("whatsapp"),

@@ -13,7 +13,7 @@ productos y pedidos.
 | App           | Next.js (App Router) + TypeScript estricto       |
 | Estilos       | Tailwind CSS                                     |
 | Base de datos | PostgreSQL en Neon + Prisma                      |
-| Autenticación | Auth.js                                          |
+| Autenticación | Better Auth                                      |
 | Imágenes      | Cloudinary                                       |
 | Pagos         | Wompi + pedido por WhatsApp                      |
 | Validación    | Zod                                              |

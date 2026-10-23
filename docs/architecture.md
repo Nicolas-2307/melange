@@ -61,4 +61,26 @@ erDiagram
 - **Pagos:** un `Payment` por intento (Wompi exige una referencia única por transacción).
 - **Entrega:** `DELIVERY` (con dirección y costo de envío) o `PICKUP`, con fecha de entrega.
 
-> Este documento se amplía en cada paso (auth en el Paso 3…).
+## Autenticación
+
+Better Auth ([ADR 0003](adr/0003-better-auth.md)). Código en `src/features/auth/`.
+
+| Pieza                 | Archivo                              | Función                                                      |
+| --------------------- | ------------------------------------ | ------------------------------------------------------------ |
+| Configuración         | `auth.ts`                            | Correo y contraseña, verificación, rol, límite de intentos   |
+| API HTTP              | `src/app/api/auth/[...all]/route.ts` | Endpoints `/api/auth/*`                                      |
+| Cliente               | `client.ts`                          | Ingreso, registro y salida desde el navegador                |
+| Sesión en el servidor | `session.ts`                         | `getSession()`, `requireUser()`, `requireAdmin()`            |
+| Redirección rápida    | `src/proxy.ts`                       | Envía al login si no hay cookie (no es control de seguridad) |
+
+Reglas:
+
+- **`requireAdmin()` en cada página y server action del panel.** El proxy y el layout ayudan,
+  pero la verificación válida es la que corre junto a los datos.
+- Un cliente que abre `/admin` ve "Página no encontrada": no se revela que el panel existe.
+- El rol `ADMIN` se asigna a cada correo de `ADMIN_EMAILS` cuando ese correo se verifica.
+- Puede haber varios admins. Quitar un correo de `ADMIN_EMAILS` no le quita el rol: eso se
+  hace cambiando `role` a `CUSTOMER` en `npm run db:studio`.
+- El rol nunca se puede enviar desde el formulario de registro (`input: false`).
+
+> Este documento se amplía en cada paso (tienda en el Paso 4…).
