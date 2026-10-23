@@ -33,17 +33,40 @@ const serverSchema = z.object({
   PAYMENT_PROVIDER: z.enum(["whatsapp"]).default("whatsapp"),
   STORAGE_PROVIDER: z.enum(["cloudinary"]).default("cloudinary"),
   EMAIL_PROVIDER: z.enum(["console"]).default("console"),
+
+  // Set by Vercel on every deployment (host only, no "https://"). Previews get a new URL
+  // each time, so these are used when NEXT_PUBLIC_SITE_URL is not set.
+  VERCEL_URL: optional(z.string()),
+  VERCEL_BRANCH_URL: optional(z.string()),
 });
 
 // NEXT_PUBLIC_* values are inlined into the browser bundle: never put secrets here.
 const clientSchema = z.object({
-  NEXT_PUBLIC_SITE_URL: z.url(),
+  // Fixed public URL (local and production). Optional on Vercel previews.
+  NEXT_PUBLIC_SITE_URL: optional(z.url()),
   NEXT_PUBLIC_WHATSAPP_NUMBER: z
     .string()
     .regex(/^57\d{10}$/, "Debe ser un número colombiano con indicativo, sin '+': 57XXXXXXXXXX"),
 });
 
-const schema = serverSchema.extend(clientSchema.shape);
+const https = (host: string | undefined) => (host ? `https://${host}` : undefined);
+
+const schema = serverSchema
+  .extend(clientSchema.shape)
+  .refine((vars) => vars.NEXT_PUBLIC_SITE_URL || vars.VERCEL_BRANCH_URL || vars.VERCEL_URL, {
+    message: "Define NEXT_PUBLIC_SITE_URL (en Vercel se toma de VERCEL_BRANCH_URL)",
+    path: ["NEXT_PUBLIC_SITE_URL"],
+  })
+  .transform((vars) => {
+    const siteUrl = (vars.NEXT_PUBLIC_SITE_URL ??
+      https(vars.VERCEL_BRANCH_URL) ??
+      https(vars.VERCEL_URL)) as string;
+    // Origins allowed to call the auth API: the site plus both Vercel URLs of a preview.
+    const trustedOrigins = [siteUrl, https(vars.VERCEL_BRANCH_URL), https(vars.VERCEL_URL)].filter(
+      (origin, index, all): origin is string => Boolean(origin) && all.indexOf(origin) === index,
+    );
+    return { ...vars, SITE_URL: siteUrl, TRUSTED_ORIGINS: trustedOrigins };
+  });
 
 function parseEnv() {
   const result = schema.safeParse(process.env);
@@ -55,4 +78,4 @@ function parseEnv() {
 }
 
 export const env = parseEnv();
-export type Env = z.infer<typeof schema>;
+export type Env = z.output<typeof schema>;

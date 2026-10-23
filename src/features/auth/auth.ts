@@ -12,7 +12,8 @@ import { verificationEmail } from "./emails";
 
 export const auth = betterAuth({
   appName: "Melange",
-  baseURL: env.NEXT_PUBLIC_SITE_URL,
+  baseURL: env.SITE_URL,
+  trustedOrigins: env.TRUSTED_ORIGINS,
   secret: env.BETTER_AUTH_SECRET,
   database: prismaAdapter(db, { provider: "postgresql" }),
 
