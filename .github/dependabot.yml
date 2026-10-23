@@ -14,6 +14,15 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # Node types must match the runtime in .nvmrc (Node 24).
+      - dependency-name: "@types/node"
+        versions: [">=25"]
+      # Major upgrades of core tooling are done manually, after reading the migration guide.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
