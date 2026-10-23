@@ -18,8 +18,15 @@ const serverSchema = z.object({
 
   // Signs session cookies and tokens. At least 32 random characters.
   BETTER_AUTH_SECRET: z.string().min(32, "Debe tener al menos 32 caracteres aleatorios"),
-  // The account with this email becomes ADMIN once its email is verified.
-  ADMIN_EMAIL: optional(z.email().toLowerCase()),
+  // Comma-separated list. Each account becomes ADMIN once its email is verified.
+  ADMIN_EMAILS: optional(z.string())
+    .transform((value) =>
+      (value ?? "")
+        .split(",")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    )
+    .pipe(z.array(z.email("Cada correo de ADMIN_EMAILS debe ser válido"))),
 
   // Provider selection: swap providers by config, not code.
   PAYMENT_PROVIDER: z.enum(["whatsapp", "wompi"]).default("whatsapp"),

@@ -13,17 +13,17 @@
 Fuente de verdad: `.env.example` y `src/lib/env.ts`. En Vercel: _Project → Settings →
 Environment Variables_, marcando el ambiente (Development / Preview / Production).
 
-| Variable                      | Development               | Preview                  | Production                      | Secreta |
-| ----------------------------- | ------------------------- | ------------------------ | ------------------------------- | ------- |
-| `NEXT_PUBLIC_SITE_URL`        | `http://localhost:3000`   | URL del preview          | dominio propio                  | No      |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | número de prueba          | número de prueba         | número del negocio              | No      |
-| `PAYMENT_PROVIDER`            | `whatsapp` / `wompi`      | `wompi`                  | `wompi`                         | No      |
-| `STORAGE_PROVIDER`            | `cloudinary`              | `cloudinary`             | `cloudinary`                    | No      |
-| `EMAIL_PROVIDER`              | `console`                 | `console`                | _(Etapa 2)_                     | No      |
-| `DATABASE_URL`                | Neon rama `dev` (pooled)  | Neon rama `dev` (pooled) | Neon rama `production` (pooled) | **Sí**  |
-| `DIRECT_URL`                  | Neon rama `dev` (directa) | —                        | Solo si se migra desde Vercel   | **Sí**  |
-| `BETTER_AUTH_SECRET`          | uno propio                | otro distinto            | otro distinto                   | **Sí**  |
-| `ADMIN_EMAIL`                 | tu correo                 | tu correo                | correo del dueño                | No      |
+| Variable                      | Development               | Preview                  | Production                                 | Secreta |
+| ----------------------------- | ------------------------- | ------------------------ | ------------------------------------------ | ------- |
+| `NEXT_PUBLIC_SITE_URL`        | `http://localhost:3000`   | URL del preview          | dominio propio                             | No      |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | número de prueba          | número de prueba         | número del negocio                         | No      |
+| `PAYMENT_PROVIDER`            | `whatsapp` / `wompi`      | `wompi`                  | `wompi`                                    | No      |
+| `STORAGE_PROVIDER`            | `cloudinary`              | `cloudinary`             | `cloudinary`                               | No      |
+| `EMAIL_PROVIDER`              | `console`                 | `console`                | _(Etapa 2)_                                | No      |
+| `DATABASE_URL`                | Neon rama `dev` (pooled)  | Neon rama `dev` (pooled) | Neon rama `production` (pooled)            | **Sí**  |
+| `DIRECT_URL`                  | Neon rama `dev` (directa) | —                        | Solo si se migra desde Vercel              | **Sí**  |
+| `BETTER_AUTH_SECRET`          | uno propio                | otro distinto            | otro distinto                              | **Sí**  |
+| `ADMIN_EMAILS`                | tu correo                 | tu correo                | correos de los admins, separados por comas | No      |
 
 Las variables de Cloudinary y Wompi se añadirán aquí en los pasos 4 y 5.
 

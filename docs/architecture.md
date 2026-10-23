@@ -78,7 +78,9 @@ Reglas:
 - **`requireAdmin()` en cada página y server action del panel.** El proxy y el layout ayudan,
   pero la verificación válida es la que corre junto a los datos.
 - Un cliente que abre `/admin` ve "Página no encontrada": no se revela que el panel existe.
-- El rol `ADMIN` se asigna a `ADMIN_EMAIL` cuando ese correo se verifica.
+- El rol `ADMIN` se asigna a cada correo de `ADMIN_EMAILS` cuando ese correo se verifica.
+- Puede haber varios admins. Quitar un correo de `ADMIN_EMAILS` no le quita el rol: eso se
+  hace cambiando `role` a `CUSTOMER` en `npm run db:studio`.
 - El rol nunca se puede enviar desde el formulario de registro (`input: false`).
 
 > Este documento se amplía en cada paso (tienda en el Paso 4…).

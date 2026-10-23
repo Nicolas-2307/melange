@@ -25,13 +25,16 @@ describe("safeRedirectPath", () => {
 });
 
 describe("isAdminEmail", () => {
-  it("compara sin importar mayúsculas ni espacios", () => {
-    expect(isAdminEmail(" Dueno@Melange.co ", "dueno@melange.co")).toBe(true);
+  const admins = ["dueno@melange.co", "socia@melange.co"];
+
+  it("reconoce cualquier correo de la lista, sin importar mayúsculas ni espacios", () => {
+    expect(isAdminEmail(" Dueno@Melange.co ", admins)).toBe(true);
+    expect(isAdminEmail("socia@melange.co", admins)).toBe(true);
   });
 
-  it("es falso si no hay ADMIN_EMAIL o el correo es otro", () => {
-    expect(isAdminEmail("dueno@melange.co", undefined)).toBe(false);
-    expect(isAdminEmail("otro@melange.co", "dueno@melange.co")).toBe(false);
+  it("es falso si la lista está vacía o el correo no está en ella", () => {
+    expect(isAdminEmail("dueno@melange.co", [])).toBe(false);
+    expect(isAdminEmail("otro@melange.co", admins)).toBe(false);
   });
 });
 

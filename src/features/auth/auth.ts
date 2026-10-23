@@ -32,10 +32,10 @@ export const auth = betterAuth({
         getEmailProvider().send(verificationEmail({ to: user.email, name: user.name, url })),
       );
     },
-    // ADMIN is granted only after proving ownership of ADMIN_EMAIL: someone registering
-    // first with the owner's address can't become admin without access to that inbox.
+    // ADMIN is granted only after proving ownership of an ADMIN_EMAILS address: someone
+    // registering first with the owner's address can't become admin without that inbox.
     afterEmailVerification: async (user) => {
-      if (isAdminEmail(user.email, env.ADMIN_EMAIL)) {
+      if (isAdminEmail(user.email, env.ADMIN_EMAILS)) {
         await db.user.update({ where: { id: user.id }, data: { role: "ADMIN" } });
       }
     },

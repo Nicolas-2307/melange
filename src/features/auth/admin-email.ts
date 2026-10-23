@@ -1,5 +1,5 @@
-/** True when `email` matches the configured ADMIN_EMAIL (case-insensitive). */
-export function isAdminEmail(email: string, adminEmail: string | undefined): boolean {
-  if (!adminEmail) return false;
-  return email.trim().toLowerCase() === adminEmail.trim().toLowerCase();
+/** True when `email` is one of the configured ADMIN_EMAILS (case-insensitive). */
+export function isAdminEmail(email: string, adminEmails: readonly string[]): boolean {
+  const normalized = email.trim().toLowerCase();
+  return adminEmails.some((adminEmail) => adminEmail.trim().toLowerCase() === normalized);
 }
