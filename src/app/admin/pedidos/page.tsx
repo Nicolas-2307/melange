@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
+import { AdminSkeleton } from "@/components/layout/admin-skeleton";
 import { requireAdmin } from "@/features/auth/session";
 import { listOrders, type OrderFilter } from "@/features/orders/admin";
 import { OrdersTable } from "@/features/orders/components/orders-table";
@@ -17,7 +19,16 @@ function parseFilter(value: string | string[] | undefined): OrderFilter {
   return FILTERS.find((filter) => filter.value === value)?.value ?? "abiertos";
 }
 
-export default async function AdminOrdersPage({ searchParams }: PageProps<"/admin/pedidos">) {
+export default function AdminOrdersPage(props: PageProps<"/admin/pedidos">) {
+  return (
+    <Suspense fallback={<AdminSkeleton />}>
+      <AdminOrdersPageContent {...props} />
+    </Suspense>
+  );
+}
+
+// Session + database reads stay inside Suspense so panel navigation can be instant.
+async function AdminOrdersPageContent({ searchParams }: PageProps<"/admin/pedidos">) {
   await requireAdmin();
   const filter = parseFilter((await searchParams).estado);
   const orders = await listOrders(filter);

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { connection } from "next/server";
+import { Suspense } from "react";
 
+import { AdminSkeleton } from "@/components/layout/admin-skeleton";
 import { requireAdmin } from "@/features/auth/session";
 import { formatDeliveryDate, todayInBogota } from "@/features/checkout/availability";
 import {
@@ -20,7 +22,16 @@ const isMonth = (value: unknown): value is string =>
 const isDay = (value: unknown): value is string =>
   typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
 
-export default async function AdminCalendarPage({ searchParams }: PageProps<"/admin/calendario">) {
+export default function AdminCalendarPage(props: PageProps<"/admin/calendario">) {
+  return (
+    <Suspense fallback={<AdminSkeleton />}>
+      <AdminCalendarPageContent {...props} />
+    </Suspense>
+  );
+}
+
+// Session + database reads stay inside Suspense so panel navigation can be instant.
+async function AdminCalendarPageContent({ searchParams }: PageProps<"/admin/calendario">) {
   await requireAdmin();
   await connection();
   const params = await searchParams;

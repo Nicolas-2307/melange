@@ -1,11 +1,22 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
+import { AdminSkeleton } from "@/components/layout/admin-skeleton";
 import { requireAdmin } from "@/features/auth/session";
 import { listProductsAdmin } from "@/features/catalog/admin-queries";
 import { ProductActiveToggle } from "@/features/catalog/components/admin/product-active-toggle";
 import { formatCOP } from "@/lib/format";
 
-export default async function AdminProductsPage() {
+export default function AdminProductsPage() {
+  return (
+    <Suspense fallback={<AdminSkeleton />}>
+      <AdminProductsPageContent />
+    </Suspense>
+  );
+}
+
+// Session + database reads stay inside Suspense so panel navigation can be instant.
+async function AdminProductsPageContent() {
   await requireAdmin();
   const products = await listProductsAdmin();
 

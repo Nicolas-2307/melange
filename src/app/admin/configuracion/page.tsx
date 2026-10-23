@@ -1,9 +1,21 @@
+import { Suspense } from "react";
+
+import { AdminSkeleton } from "@/components/layout/admin-skeleton";
 import { requireAdmin } from "@/features/auth/session";
 import { StoreSettingsForm } from "@/features/checkout/components/admin/store-settings-form";
 import { ZoneForm } from "@/features/checkout/components/admin/zone-form";
 import { getAllDeliveryZones, getStoreSettings } from "@/features/checkout/store";
 
-export default async function AdminSettingsPage() {
+export default function AdminSettingsPage() {
+  return (
+    <Suspense fallback={<AdminSkeleton />}>
+      <AdminSettingsPageContent />
+    </Suspense>
+  );
+}
+
+// Session + database reads stay inside Suspense so panel navigation can be instant.
+async function AdminSettingsPageContent() {
   await requireAdmin();
   const [settings, zones] = await Promise.all([getStoreSettings(), getAllDeliveryZones()]);
 
