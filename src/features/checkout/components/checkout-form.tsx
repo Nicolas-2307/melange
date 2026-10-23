@@ -8,10 +8,13 @@ import { formatCOP } from "@/lib/format";
 
 import { placeOrder } from "../actions";
 import type { DeliveryZoneOption } from "../store";
+import { DateCalendar } from "./date-calendar";
 
 type CheckoutFormProps = {
   zones: DeliveryZoneOption[];
-  dates: { value: string; label: string }[];
+  /** Selectable delivery days, "YYYY-MM-DD". */
+  availableDates: string[];
+  today: string;
   pickupAddress: string;
   subtotal: number;
   defaults: { name: string; email: string };
@@ -22,13 +25,15 @@ const selectClass =
 
 export function CheckoutForm({
   zones,
-  dates,
+  availableDates,
+  today,
   pickupAddress,
   subtotal,
   defaults,
 }: CheckoutFormProps) {
   const [fulfillment, setFulfillment] = useState<"DELIVERY" | "PICKUP">("DELIVERY");
   const [zoneId, setZoneId] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
 
@@ -149,28 +154,14 @@ export function CheckoutForm({
             </p>
           )}
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="deliveryDate" className="text-sm font-medium">
-              {fulfillment === "DELIVERY" ? "Fecha de entrega" : "Fecha de recogida"}
-            </label>
-            <select
-              id="deliveryDate"
-              name="deliveryDate"
-              defaultValue=""
-              aria-invalid={fieldError("deliveryDate") ? true : undefined}
-              className={selectClass}
-            >
-              <option value="">Elige una fecha</option>
-              {dates.map((date) => (
-                <option key={date.value} value={date.value}>
-                  {date.label}
-                </option>
-              ))}
-            </select>
-            {fieldError("deliveryDate") && (
-              <p className="text-sm text-red-600">{fieldError("deliveryDate")}</p>
-            )}
-          </div>
+          <DateCalendar
+            label={fulfillment === "DELIVERY" ? "Fecha de entrega" : "Fecha de recogida"}
+            availableDates={availableDates}
+            today={today}
+            value={deliveryDate}
+            onChange={setDeliveryDate}
+            error={fieldError("deliveryDate")}
+          />
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="notes" className="text-sm font-medium">

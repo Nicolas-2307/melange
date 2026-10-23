@@ -5,7 +5,6 @@ import { Suspense } from "react";
 
 import { getSession } from "@/features/auth/session";
 import { getCart } from "@/features/cart/cart";
-import { formatDeliveryDate } from "@/features/checkout/availability";
 import { CheckoutForm } from "@/features/checkout/components/checkout-form";
 import { getAvailability, getDeliveryZones } from "@/features/checkout/store";
 
@@ -36,7 +35,8 @@ async function CheckoutContent() {
   return (
     <CheckoutForm
       zones={zones}
-      dates={availability.dates.map((value) => ({ value, label: formatDeliveryDate(value) }))}
+      availableDates={availability.dates}
+      today={availability.today}
       pickupAddress={availability.pickupAddress}
       subtotal={cart.subtotal}
       defaults={{ name: session?.user.name ?? "", email: session?.user.email ?? "" }}

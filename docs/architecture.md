@@ -119,6 +119,9 @@ Código en `src/features/checkout/` y `src/features/orders/`. Rutas `/checkout` 
   la base de datos; el dueño las editará en el panel (Paso 5).
 - **Fechas:** día calendario de Bogotá. Se ofrecen las que cumplen anticipación mínima, días de
   trabajo, fechas bloqueadas y cupo diario (`availability.ts`, funciones puras con pruebas).
+  El cliente las elige en un **calendario mensual** propio (`date-calendar.tsx`, sin librerías):
+  semana de lunes a domingo; los días no disponibles aparecen tachados y deshabilitados.
+- **Calendario de la dueña:** vista mensual de pedidos por día dentro del panel (Paso 5).
 - **`placeOrder` recalcula todo en el servidor:** precios desde la base de datos, costo de la
   zona y disponibilidad de la fecha. Los totales del formulario son solo informativos.
 - **Pedido:** número visible desde #1001, copia de productos y precios (`order_items`), un

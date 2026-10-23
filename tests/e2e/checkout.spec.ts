@@ -44,10 +44,11 @@ async function fillContact(page: Page, email: string) {
   await page.getByLabel("Correo").fill(email);
 }
 
+/** Clicks the first available day in the delivery calendar. */
 async function pickFirstDate(page: Page) {
-  const select = page.getByRole("combobox", { name: /Fecha de/ });
-  const firstDate = await select.locator("option").nth(1).getAttribute("value");
-  await select.selectOption(firstDate!);
+  const calendar = page.getByRole("group", { name: /Fecha de/ });
+  await calendar.locator("button[aria-pressed]:not([disabled])").first().click();
+  await expect(page.getByText("Elegiste:")).toBeVisible();
 }
 
 test("pedido a domicilio: valida, calcula el total y lleva a WhatsApp", async ({ page }) => {
@@ -56,6 +57,7 @@ test("pedido a domicilio: valida, calcula el total y lleva a WhatsApp", async ({
   await page.getByRole("button", { name: "Hacer pedido" }).click();
   await expect(page.getByText("Escribe tu nombre")).toBeVisible();
   await expect(page.locator("p", { hasText: "Elige tu zona" })).toBeVisible();
+  await expect(page.getByText("Elige una fecha")).toBeVisible();
 
   await fillContact(page, testEmail());
   await page
@@ -87,6 +89,14 @@ test("pedido para recoger en la sede no cobra domicilio", async ({ page }) => {
   await page.getByRole("button", { name: "Hacer pedido" }).click();
   await expect(page.getByRole("heading", { name: "Recogida" })).toBeVisible();
   await expect(page.getByTestId("order-total")).toHaveText(/120\.000/);
+});
+
+test("el calendario no deja elegir días no disponibles", async ({ page }) => {
+  await addCakeAndGoToCheckout(page);
+  const calendar = page.getByRole("group", { name: "Fecha de entrega" });
+  // Today is never selectable (minimum lead time is at least 1 day in the seed).
+  await expect(calendar.getByRole("button", { name: /no disponible/ }).first()).toBeDisabled();
+  await expect(calendar.locator("button[aria-pressed]:not([disabled])").first()).toBeVisible();
 });
 
 test("con el carrito vacío el checkout vuelve al carrito", async ({ page }) => {
