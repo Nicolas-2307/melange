@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
+import { AdminSkeleton } from "@/components/layout/admin-skeleton";
 import { requireAdmin } from "@/features/auth/session";
 import { formatDeliveryDate } from "@/features/checkout/availability";
 import { getPickupAddress } from "@/features/checkout/store";
@@ -20,7 +22,16 @@ const PAYMENT_LABEL = {
 
 const PROVIDER_LABEL = { WHATSAPP: "Acordado por WhatsApp", WOMPI: "Wompi" } as const;
 
-export default async function AdminOrderPage({ params }: PageProps<"/admin/pedidos/[id]">) {
+export default function AdminOrderPage(props: PageProps<"/admin/pedidos/[id]">) {
+  return (
+    <Suspense fallback={<AdminSkeleton />}>
+      <AdminOrderPageContent {...props} />
+    </Suspense>
+  );
+}
+
+// Session + database reads stay inside Suspense so panel navigation can be instant.
+async function AdminOrderPageContent({ params }: PageProps<"/admin/pedidos/[id]">) {
   await requireAdmin();
   const order = await getAdminOrder((await params).id);
   if (!order) notFound();

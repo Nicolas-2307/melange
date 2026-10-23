@@ -1,10 +1,21 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
+import { AdminSkeleton } from "@/components/layout/admin-skeleton";
 import { requireAdmin } from "@/features/auth/session";
 import { listCategoriesAdmin } from "@/features/catalog/admin-queries";
 import { CategoryForm } from "@/features/catalog/components/admin/category-form";
 
-export default async function AdminCategoriesPage() {
+export default function AdminCategoriesPage() {
+  return (
+    <Suspense fallback={<AdminSkeleton />}>
+      <AdminCategoriesPageContent />
+    </Suspense>
+  );
+}
+
+// Session + database reads stay inside Suspense so panel navigation can be instant.
+async function AdminCategoriesPageContent() {
   await requireAdmin();
   const categories = await listCategoriesAdmin();
 

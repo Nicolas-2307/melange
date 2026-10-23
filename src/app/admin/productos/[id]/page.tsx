@@ -1,11 +1,22 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
+import { AdminSkeleton } from "@/components/layout/admin-skeleton";
 import { requireAdmin } from "@/features/auth/session";
 import { getProductAdmin, listCategoriesAdmin } from "@/features/catalog/admin-queries";
 import { ProductForm } from "@/features/catalog/components/admin/product-form";
 
-export default async function EditProductPage({
+export default function EditProductPage(props: PageProps<"/admin/productos/[id]">) {
+  return (
+    <Suspense fallback={<AdminSkeleton />}>
+      <EditProductPageContent {...props} />
+    </Suspense>
+  );
+}
+
+// Session + database reads stay inside Suspense so panel navigation can be instant.
+async function EditProductPageContent({
   params,
   searchParams,
 }: PageProps<"/admin/productos/[id]">) {

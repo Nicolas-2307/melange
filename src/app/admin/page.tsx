@@ -1,12 +1,23 @@
 import Link from "next/link";
 import { connection } from "next/server";
+import { Suspense } from "react";
 
+import { AdminSkeleton } from "@/components/layout/admin-skeleton";
 import { requireAdmin } from "@/features/auth/session";
 import { todayInBogota } from "@/features/checkout/availability";
 import { getDashboardSummary } from "@/features/orders/admin";
 import { OrdersTable } from "@/features/orders/components/orders-table";
 
-export default async function AdminHomePage() {
+export default function AdminHomePage() {
+  return (
+    <Suspense fallback={<AdminSkeleton />}>
+      <AdminHomePageContent />
+    </Suspense>
+  );
+}
+
+// Session + database reads stay inside Suspense so panel navigation can be instant.
+async function AdminHomePageContent() {
   const { user } = await requireAdmin();
   await connection();
   const summary = await getDashboardSummary(todayInBogota());

@@ -138,8 +138,9 @@ Código en `src/features/checkout/` y `src/features/orders/`. Rutas `/checkout` 
 
 ## Panel de la dueña
 
-Rutas bajo `/admin` (rol `ADMIN`): **Resumen**, **Pedidos**, **Calendario**, **Productos** y
-**Categorías**. Las fotos (Cloudinary) y la configuración llegan en los PRs 5.2b y 5.3.
+Rutas bajo `/admin` (rol `ADMIN`): **Resumen**, **Pedidos**, **Calendario**, **Productos**,
+**Categorías** y **Configuración**. Las fotos con Cloudinary quedan pendientes hasta que la
+dueña tenga su cuenta ([issue #15](https://github.com/Nicolas-2307/melange/issues/15)).
 
 - **Resumen:** pedidos por confirmar, pedidos abiertos y próximas entregas.
 - **Pedidos:** filtros (abiertos, por confirmar, entregados, cancelados, todos) y detalle con datos
@@ -158,6 +159,10 @@ Rutas bajo `/admin` (rol `ADMIN`): **Resumen**, **Pedidos**, **Calendario**, **P
 - **Categorías:** crear y editar nombre, dirección, descripción, orden y visibilidad.
 - **Caché:** cada cambio de catálogo llama `updateTag(CATALOG_TAG)`; la tienda lo muestra al
   instante (hay una prueba e2e que lo verifica).
+- **Configuración:** dirección de la sede, días de trabajo, anticipación mínima y máximo de
+  pedidos por día, más las **zonas de domicilio** (crear, editar valor, ocultar, eliminar). Se
+  aplica de inmediato en el checkout. Eliminar una zona no cambia pedidos pasados (guardan una
+  copia del nombre).
 - Todas las páginas y acciones llaman `requireAdmin()`.
 
 > Este documento se amplía en cada paso (productos y configuración en 5.2 y 5.3…).

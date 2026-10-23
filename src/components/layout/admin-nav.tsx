@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/admin/calendario", label: "Calendario" },
   { href: "/admin/productos", label: "Productos" },
   { href: "/admin/categorias", label: "Categorías" },
+  { href: "/admin/configuracion", label: "Configuración" },
 ] as const;
 
 export function AdminNav() {

@@ -72,8 +72,13 @@ test("la dueña gestiona un pedido y bloquea un día en su calendario", async ({
   await page.goto("/admin");
   await expect(page.getByRole("navigation", { name: "Panel" })).toBeVisible();
   await page.getByRole("link", { name: "Pedidos", exact: true }).click();
-  // Next keeps the previous page (dashboard, which also lists this order) mounted but hidden.
+  // Wait for the list itself: the dashboard also links this order and Next keeps it mounted
+  // (hidden) for a moment after navigating, so clicking too early can target that copy.
+  await expect(page).toHaveURL(/\/admin\/pedidos$/);
+  const ordersList = page.getByRole("navigation", { name: "Filtrar pedidos" });
+  await expect(ordersList).toBeVisible();
   await page.getByRole("link", { name: orderNumber }).filter({ visible: true }).click();
+  await expect(page).toHaveURL(/\/admin\/pedidos\/[\w-]+$/);
 
   // Detail: confirm, register payment, prepare
   await expect(page.getByRole("heading", { name: `Pedido ${orderNumber}` })).toBeVisible();
@@ -94,7 +99,10 @@ test("la dueña gestiona un pedido y bloquea un día en su calendario", async ({
     page.getByRole("link", { name: orderNumber }).filter({ visible: true }),
   ).toBeVisible();
 
-  // Block that day for new orders, then unblock it
+  // Block a far-away day, then unblock it. Never block days near today: checkout tests
+  // running in parallel pick the first available date.
+  const far = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  await page.goto(`/admin/calendario?mes=${far.slice(0, 7)}&dia=${far}`);
   await page.getByLabel("Motivo (opcional)").fill(BLOCK_REASON);
   await page.getByRole("button", { name: "Bloquear día" }).click();
   await expect(page.getByText("Este día está")).toBeVisible();
