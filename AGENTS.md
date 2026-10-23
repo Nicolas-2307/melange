@@ -56,6 +56,13 @@ Antes de dar una tarea por terminada: `npm run lint && npm run typecheck && npm 
 - Lecturas del catálogo en `src/features/catalog/queries.ts` (cacheadas). Toda escritura de
   productos/categorías llama `updateTag(CATALOG_TAG)`.
 
+## Datos de la propietaria
+
+La dueña del negocio aún no ha entregado sus datos ni sus cuentas. Todo lo que dependa de ella
+(número de WhatsApp, cuentas, precios, fotos, zonas, datos legales…) usa **valores de ejemplo**
+configurables y nunca bloquea el trabajo. Si un cambio agrega o quita algo que ella debe
+entregar, **actualiza `docs/datos-pendientes-propietaria.md` en el mismo PR**.
+
 ## Flujo de Git
 
 - Ramas largas: `dev` → `qa` → `main` (producción). Ver `docs/git-workflow.md`.
