@@ -18,6 +18,7 @@ env:
   NEXT_PUBLIC_SITE_URL: http://localhost:3000
   NEXT_PUBLIC_WHATSAPP_NUMBER: "570000000000"
   DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+  BETTER_AUTH_SECRET: ci-only-not-a-real-secret-0123456789abcdef
   NEXT_TELEMETRY_DISABLED: 1
 
 jobs:

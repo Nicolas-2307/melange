@@ -10,7 +10,7 @@ escalar sin reescribir código.
 
 ## Decisión
 
-Next.js (App Router) + TypeScript estricto, Tailwind CSS, PostgreSQL en Neon con Prisma, Auth.js,
+Next.js (App Router) + TypeScript estricto, Tailwind CSS, PostgreSQL en Neon con Prisma, Auth.js (reemplazado por Better Auth, ver ADR 0003),
 Cloudinary, Wompi + pedido por WhatsApp, Zod, Vitest + Playwright, Vercel y npm.
 Pagos, almacenamiento y correo van detrás de interfaces propias, elegidas por variable de entorno.
 

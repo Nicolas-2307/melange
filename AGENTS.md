@@ -14,7 +14,7 @@ Tienda online de repostería (postres, galletas, pasteles) en Colombia.
 ## Stack
 
 Next.js (App Router) + TypeScript estricto · Tailwind CSS · PostgreSQL (Neon) + Prisma ·
-Auth.js · Cloudinary · Wompi + WhatsApp · Zod · Vitest + Playwright · Vercel · npm.
+Better Auth · Cloudinary · Wompi + WhatsApp · Zod · Vitest + Playwright · Vercel · npm.
 
 ## Estructura
 

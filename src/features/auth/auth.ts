@@ -1,0 +1,63 @@
+import { betterAuth } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { nextCookies } from "better-auth/next-js";
+import { after } from "next/server";
+
+import { db } from "@/lib/db";
+import { env } from "@/lib/env";
+import { getEmailProvider } from "@/services/email";
+
+import { isAdminEmail } from "./admin-email";
+import { verificationEmail } from "./emails";
+
+export const auth = betterAuth({
+  appName: "Melange",
+  baseURL: env.NEXT_PUBLIC_SITE_URL,
+  secret: env.BETTER_AUTH_SECRET,
+  database: prismaAdapter(db, { provider: "postgresql" }),
+
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 8,
+    maxPasswordLength: 128,
+    autoSignIn: true,
+  },
+
+  emailVerification: {
+    sendOnSignUp: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      // Not awaited (avoids timing attacks); `after` keeps serverless functions alive until sent.
+      after(() =>
+        getEmailProvider().send(verificationEmail({ to: user.email, name: user.name, url })),
+      );
+    },
+    // ADMIN is granted only after proving ownership of ADMIN_EMAIL: someone registering
+    // first with the owner's address can't become admin without access to that inbox.
+    afterEmailVerification: async (user) => {
+      if (isAdminEmail(user.email, env.ADMIN_EMAIL)) {
+        await db.user.update({ where: { id: user.id }, data: { role: "ADMIN" } });
+      }
+    },
+  },
+
+  user: {
+    additionalFields: {
+      role: { type: "string", input: false, defaultValue: "CUSTOMER" },
+    },
+  },
+
+  // Stored in the database so limits hold across serverless instances. Enabled in production.
+  rateLimit: {
+    storage: "database",
+    customRules: {
+      "/sign-in/email": { window: 60, max: 5 },
+      "/sign-up/email": { window: 60, max: 3 },
+    },
+  },
+
+  // Must be the last plugin: lets server actions set auth cookies.
+  plugins: [nextCookies()],
+});
+
+export type Session = typeof auth.$Infer.Session;

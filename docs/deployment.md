@@ -22,8 +22,10 @@ Environment Variables_, marcando el ambiente (Development / Preview / Production
 | `EMAIL_PROVIDER`              | `console`                 | `console`                | _(Etapa 2)_                     | No      |
 | `DATABASE_URL`                | Neon rama `dev` (pooled)  | Neon rama `dev` (pooled) | Neon rama `production` (pooled) | **Sí**  |
 | `DIRECT_URL`                  | Neon rama `dev` (directa) | —                        | Solo si se migra desde Vercel   | **Sí**  |
+| `BETTER_AUTH_SECRET`          | uno propio                | otro distinto            | otro distinto                   | **Sí**  |
+| `ADMIN_EMAIL`                 | tu correo                 | tu correo                | correo del dueño                | No      |
 
-Las variables de Auth.js, Cloudinary y Wompi se añadirán aquí en los pasos 3 a 5.
+Las variables de Cloudinary y Wompi se añadirán aquí en los pasos 4 y 5.
 
 ## Base de datos (Neon)
 
