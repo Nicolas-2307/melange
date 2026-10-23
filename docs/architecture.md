@@ -96,4 +96,18 @@ Código en `src/features/catalog/`. Rutas: `/`, `/productos`, `/categorias/[slug
   (`public/images/placeholders/`). Las fotos reales llegan con Cloudinary en el Paso 5.
 - Solo se muestran productos activos, de categorías activas y con al menos una variante activa.
 
-> Este documento se amplía en cada paso (carrito y checkout en el Paso 4…).
+## Carrito
+
+Código en `src/features/cart/`. Página `/carrito` y contador en el encabezado.
+
+- **Invitados:** el carrito se identifica con la cookie `melange_cart` (`httpOnly`, 30 días),
+  que guarda un id imposible de adivinar. **Usuarios:** un carrito por usuario (`carts.userId`).
+- **Al ingresar o registrarse** se fusiona el carrito de invitado con el del usuario
+  (`mergeGuestCart`): misma variante → se suman las cantidades, máximo 20 por ítem.
+- **Precios siempre actuales:** el carrito guarda variante y cantidad, no precios. El precio se
+  lee de la base de datos al mostrarlo y se volverá a calcular en el servidor al pagar.
+- Productos o variantes desactivados desaparecen del carrito automáticamente.
+- Toda acción (`actions.ts`) valida con Zod y solo toca ítems del carrito del visitante.
+- Pendiente: limpiar carritos de invitado abandonados (tarea programada, Paso 6).
+
+> Este documento se amplía en cada paso (checkout en el Paso 4.3…).
