@@ -38,6 +38,18 @@ de entorno** (en `.env.local` y en Vercel) o se edita en el **panel** (Paso 5).
 | Fechas sin servicio (festivos, vacaciones) | Panel → Calendario → Bloquear día | Ninguna                                   | ⏳     |
 | Máximo de pedidos por día                  | Panel → Configuración             | Sin límite                                | ⏳     |
 
+## Chatbot (futuro, issue #12)
+
+Solo hace falta cuando se implemente el chatbot: [issue #12](https://github.com/Nicolas-2307/melange/issues/12).
+
+| Dato                                                  | Dónde va                            | Valor de ejemplo                         | Estado |
+| ----------------------------------------------------- | ----------------------------------- | ---------------------------------------- | ------ |
+| Preguntas frecuentes y sus respuestas                 | Configuración del chatbot           | —                                        | ⏳     |
+| Tono y forma de hablar del asistente                  | Configuración del chatbot           | Cercano y amable, en español de Colombia | ⏳     |
+| Horario de atención por WhatsApp                      | Configuración del chatbot           | —                                        | ⏳     |
+| Presupuesto mensual máximo para la IA                 | Variable de entorno (tope de gasto) | —                                        | ⏳     |
+| ¿Chatbot también en WhatsApp? (WhatsApp Business API) | Decisión de alcance                 | Solo en la web                           | ⏳     |
+
 ## Cuentas de servicios (a nombre del negocio)
 
 Detalle del traspaso en [deployment.md](deployment.md#traspaso-al-propietario-antes-de-la-primera-venta).
