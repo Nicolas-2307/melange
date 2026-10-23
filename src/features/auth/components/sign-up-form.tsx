@@ -7,6 +7,8 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
 
+import { mergeGuestCart } from "@/features/cart/actions";
+
 import { authClient } from "../client";
 import { authErrorMessage } from "../errors";
 import { safeRedirectPath } from "../redirect";
@@ -36,6 +38,9 @@ export function SignUpForm() {
       return setErrors({ form: authErrorMessage(error) });
     }
 
+    // Keep what the visitor added before signing in.
+    // A failed merge must not block sign-in; the guest cart just stays in its cookie.
+    await mergeGuestCart().catch(() => undefined);
     // Full page load so every server component re-renders with the new session.
     window.location.assign(next);
   }
