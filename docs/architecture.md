@@ -134,8 +134,8 @@ Código en `src/features/checkout/` y `src/features/orders/`. Rutas `/checkout` 
 
 ## Panel de la dueña
 
-Rutas bajo `/admin` (rol `ADMIN`): **Resumen**, **Pedidos** y **Calendario**. Productos y
-configuración llegan en los PRs 5.2 y 5.3.
+Rutas bajo `/admin` (rol `ADMIN`): **Resumen**, **Pedidos**, **Calendario**, **Productos** y
+**Categorías**. Las fotos (Cloudinary) y la configuración llegan en los PRs 5.2b y 5.3.
 
 - **Resumen:** pedidos por confirmar, pedidos abiertos y próximas entregas.
 - **Pedidos:** filtros (abiertos, por confirmar, entregados, cancelados, todos) y detalle con datos
@@ -147,6 +147,13 @@ configuración llegan en los PRs 5.2 y 5.3.
 - **Calendario:** vista mensual con el número de pedidos por día. Al tocar un día se ven sus
   pedidos y se puede **bloquear o desbloquear** (con motivo). El bloqueo aplica de inmediato al
   calendario del checkout; los pedidos ya hechos para ese día no se tocan.
+- **Productos:** crear y editar nombre, dirección (slug, generada del nombre), descripción,
+  categoría, presentaciones con precio (orden, disponibles o no), visible y destacado. Una
+  presentación ya pedida no se borra: se desactiva, para que el historial de pedidos no pierda la
+  referencia.
+- **Categorías:** crear y editar nombre, dirección, descripción, orden y visibilidad.
+- **Caché:** cada cambio de catálogo llama `updateTag(CATALOG_TAG)`; la tienda lo muestra al
+  instante (hay una prueba e2e que lo verifica).
 - Todas las páginas y acciones llaman `requireAdmin()`.
 
 > Este documento se amplía en cada paso (productos y configuración en 5.2 y 5.3…).
