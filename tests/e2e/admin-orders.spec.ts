@@ -72,7 +72,8 @@ test("la dueña gestiona un pedido y bloquea un día en su calendario", async ({
   await page.goto("/admin");
   await expect(page.getByRole("navigation", { name: "Panel" })).toBeVisible();
   await page.getByRole("link", { name: "Pedidos", exact: true }).click();
-  await page.getByRole("link", { name: orderNumber }).click();
+  // Next keeps the previous page (dashboard, which also lists this order) mounted but hidden.
+  await page.getByRole("link", { name: orderNumber }).filter({ visible: true }).click();
 
   // Detail: confirm, register payment, prepare
   await expect(page.getByRole("heading", { name: `Pedido ${orderNumber}` })).toBeVisible();

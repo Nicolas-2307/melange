@@ -79,7 +79,7 @@ test("la dueña crea categoría y producto, y los cambios se ven al instante en 
 
   // Edit the price
   await page.goto("/admin/productos");
-  await page.getByRole("link", { name: productName }).click();
+  await page.getByRole("link", { name: productName }).filter({ visible: true }).click();
   await page.getByLabel("Precio (COP)").first().fill("15000");
   await page.getByRole("button", { name: "Guardar cambios" }).click();
   await expect(page.getByText("Cambios guardados.")).toBeVisible();
