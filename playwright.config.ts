@@ -12,6 +12,8 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
   // Neon scales to zero: the first query after idle can take several seconds.
   expect: { timeout: 15_000 },
+  // Admin flows are long and run in parallel against a real (remote) database.
+  timeout: 60_000,
   use: {
     baseURL: `http://localhost:${PORT}`,
     locale: "es-CO",

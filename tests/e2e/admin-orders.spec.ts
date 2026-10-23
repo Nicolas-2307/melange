@@ -94,7 +94,10 @@ test("la dueña gestiona un pedido y bloquea un día en su calendario", async ({
     page.getByRole("link", { name: orderNumber }).filter({ visible: true }),
   ).toBeVisible();
 
-  // Block that day for new orders, then unblock it
+  // Block a far-away day, then unblock it. Never block days near today: checkout tests
+  // running in parallel pick the first available date.
+  const far = new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  await page.goto(`/admin/calendario?mes=${far.slice(0, 7)}&dia=${far}`);
   await page.getByLabel("Motivo (opcional)").fill(BLOCK_REASON);
   await page.getByRole("button", { name: "Bloquear día" }).click();
   await expect(page.getByText("Este día está")).toBeVisible();
