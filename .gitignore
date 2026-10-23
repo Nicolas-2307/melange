@@ -1,0 +1,36 @@
+# dependencies
+/node_modules
+
+# testing
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# next.js
+/.next/
+/out/
+/build
+
+# env files: NEVER commit real secrets. Only .env.example is versioned.
+.env*
+!.env.example
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# claude code: personal settings are not shared
+.claude/settings.local.json
+
+# os / editors
+.DS_Store
+Thumbs.db
+*.pem
+
+# debug
+npm-debug.log*
