@@ -53,6 +53,8 @@ Antes de dar una tarea por terminada: `npm run lint && npm run typecheck && npm 
   Cada variable nueva va en `env.ts`, `.env.example` y `docs/deployment.md`.
 - Server Components por defecto; `"use client"` solo cuando haga falta interactividad.
 - Montos siempre en enteros COP; nunca calcular precios en el cliente sin revalidar en el servidor.
+- Lecturas del catálogo en `src/features/catalog/queries.ts` (cacheadas). Toda escritura de
+  productos/categorías llama `updateTag(CATALOG_TAG)`.
 
 ## Flujo de Git
 
