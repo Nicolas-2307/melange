@@ -29,15 +29,19 @@ Auth.js · Cloudinary · Wompi + WhatsApp · Zod · Vitest + Playwright · Verce
 
 ## Comandos
 
-| Comando             | Qué hace                                        |
-| ------------------- | ----------------------------------------------- |
-| `npm run dev`       | Servidor de desarrollo en http://localhost:3000 |
-| `npm run lint`      | ESLint (0 advertencias permitidas)              |
-| `npm run typecheck` | Tipos de rutas + `tsc --noEmit`                 |
-| `npm test`          | Pruebas unitarias (Vitest)                      |
-| `npm run test:e2e`  | Pruebas e2e (Playwright)                        |
-| `npm run build`     | Build de producción                             |
-| `npm run format`    | Prettier en todo el repo                        |
+| Comando              | Qué hace                                        |
+| -------------------- | ----------------------------------------------- |
+| `npm run dev`        | Servidor de desarrollo en http://localhost:3000 |
+| `npm run lint`       | ESLint (0 advertencias permitidas)              |
+| `npm run typecheck`  | Tipos de rutas + `tsc --noEmit`                 |
+| `npm test`           | Pruebas unitarias (Vitest)                      |
+| `npm run test:e2e`   | Pruebas e2e (Playwright)                        |
+| `npm run db:migrate` | Crea y aplica una migración (desarrollo)        |
+| `npm run db:deploy`  | Aplica migraciones pendientes (producción)      |
+| `npm run db:seed`    | Carga productos de ejemplo                      |
+| `npm run db:studio`  | Explorador visual de la base de datos           |
+| `npm run build`      | Build de producción                             |
+| `npm run format`     | Prettier en todo el repo                        |
 
 Antes de dar una tarea por terminada: `npm run lint && npm run typecheck && npm test && npm run build`.
 
