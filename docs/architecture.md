@@ -82,6 +82,10 @@ Reglas:
 - Puede haber varios admins. Quitar un correo de `ADMIN_EMAILS` no le quita el rol: eso se
   hace cambiando `role` a `CUSTOMER` en `npm run db:studio`.
 - El rol nunca se puede enviar desde el formulario de registro (`input: false`).
+- **Rendimiento:** la sesión se guarda 5 minutos en una cookie firmada (`cookieCache`) y
+  `getSession()` se deduplica por petición con `cache`, así que la mayoría de las páginas no
+  consultan la base de datos para saber quién es el usuario. `requireAdmin()` sí lee siempre
+  la base de datos, para que un cambio de rol aplique al instante.
 
 ## Catálogo
 

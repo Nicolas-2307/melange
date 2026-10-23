@@ -41,6 +41,13 @@ export const auth = betterAuth({
     },
   },
 
+  // Keeps the session in a signed cookie for 5 minutes, so most pages skip the database
+  // lookup. Role changes reach the header within 5 minutes; requireAdmin() always reads
+  // the database.
+  session: {
+    cookieCache: { enabled: true, maxAge: 5 * 60 },
+  },
+
   user: {
     additionalFields: {
       role: { type: "string", input: false, defaultValue: "CUSTOMER" },
