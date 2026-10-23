@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Ilustración de postre">
+  <rect width="400" height="400" fill="#F7EEF2"/>
+  <path d="M120 170h160l-22 150a14 14 0 0 1-14 12H156a14 14 0 0 1-14-12z" fill="#FFFFFF" stroke="#E4CDD6" stroke-width="6"/>
+  <path d="M128 225h144l-8 55H136z" fill="#F3D9A4"/>
+  <path d="M132 255h136l-4 30H136z" fill="#C98B5E"/>
+  <path d="M120 170c10-40 40-62 80-62s70 22 80 62z" fill="#FFF8F2" stroke="#EAD8CE" stroke-width="6"/>
+  <circle cx="200" cy="98" r="16" fill="#D9475F"/>
+  <path d="M200 82c4-12 12-18 22-20" fill="none" stroke="#5E8C4A" stroke-width="5" stroke-linecap="round"/>
+</svg>

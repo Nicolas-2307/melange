@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SiteHeader } from "@/components/layout/site-header";
+import { env } from "@/lib/env";
 
 import "./globals.css";
 
@@ -15,6 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  // Absolute base for Open Graph images and canonical URLs.
+  metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
   title: "Melange · Repostería",
   description: "Postres, galletas y pasteles en Colombia.",
 };

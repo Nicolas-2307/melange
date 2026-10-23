@@ -83,4 +83,17 @@ Reglas:
   hace cambiando `role` a `CUSTOMER` en `npm run db:studio`.
 - El rol nunca se puede enviar desde el formulario de registro (`input: false`).
 
-> Este documento se amplía en cada paso (tienda en el Paso 4…).
+## Catálogo
+
+Código en `src/features/catalog/`. Rutas: `/`, `/productos`, `/categorias/[slug]`, `/productos/[slug]`.
+
+- **Caché:** las consultas usan `"use cache"` con la etiqueta `catalog` y duran 1 hora. Así casi
+  no se consulta Neon (ahorra horas de cómputo del plan gratis). Cada cambio del panel a
+  productos o categorías **debe** llamar `updateTag(CATALOG_TAG)` para que se vea al instante.
+- **Build con base de datos:** `/` y `/productos` se prerenderizan en el build, así que el build
+  necesita `DATABASE_URL` con datos. En CI se usa un PostgreSQL temporal con migraciones y seed.
+- **Fotos:** si un producto no tiene fotos se muestra una ilustración de su categoría
+  (`public/images/placeholders/`). Las fotos reales llegan con Cloudinary en el Paso 5.
+- Solo se muestran productos activos, de categorías activas y con al menos una variante activa.
+
+> Este documento se amplía en cada paso (carrito y checkout en el Paso 4…).
