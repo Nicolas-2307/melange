@@ -121,7 +121,7 @@ Código en `src/features/checkout/` y `src/features/orders/`. Rutas `/checkout` 
   trabajo, fechas bloqueadas y cupo diario (`availability.ts`, funciones puras con pruebas).
   El cliente las elige en un **calendario mensual** propio (`date-calendar.tsx`, sin librerías):
   semana de lunes a domingo; los días no disponibles aparecen tachados y deshabilitados.
-- **Calendario de la dueña:** vista mensual de pedidos por día dentro del panel (Paso 5).
+- **Calendario de la dueña:** `/admin/calendario` (ver sección Panel).
 - **`placeOrder` recalcula todo en el servidor:** precios desde la base de datos, costo de la
   zona y disponibilidad de la fecha. Los totales del formulario son solo informativos.
 - **Pedido:** número visible desde #1001, copia de productos y precios (`order_items`), un
@@ -132,4 +132,21 @@ Código en `src/features/checkout/` y `src/features/orders/`. Rutas `/checkout` 
   `PAYMENT_PROVIDER`. Hoy `whatsapp`: el cliente envía el pedido con un mensaje ya armado y el
   dueño confirma y acuerda el pago. En el Paso 4.4 se agrega `wompi` sin tocar el checkout.
 
-> Este documento se amplía en cada paso (panel del dueño en el Paso 5…).
+## Panel de la dueña
+
+Rutas bajo `/admin` (rol `ADMIN`): **Resumen**, **Pedidos** y **Calendario**. Productos y
+configuración llegan en los PRs 5.2 y 5.3.
+
+- **Resumen:** pedidos por confirmar, pedidos abiertos y próximas entregas.
+- **Pedidos:** filtros (abiertos, por confirmar, entregados, cancelados, todos) y detalle con datos
+  del cliente (WhatsApp, llamada, correo), productos, entrega y pago.
+- **Estados:** `PENDING → CONFIRMED → PREPARING → READY → COMPLETED`, un paso a la vez, y
+  `CANCELLED` antes de entregar (`status.ts`). La actualización es condicional: si otra sesión
+  cambió el pedido mientras tanto, no se sobrescribe.
+- **Pago por WhatsApp:** la dueña registra el pago recibido (`payments.status = APPROVED`).
+- **Calendario:** vista mensual con el número de pedidos por día. Al tocar un día se ven sus
+  pedidos y se puede **bloquear o desbloquear** (con motivo). El bloqueo aplica de inmediato al
+  calendario del checkout; los pedidos ya hechos para ese día no se tocan.
+- Todas las páginas y acciones llaman `requireAdmin()`.
+
+> Este documento se amplía en cada paso (productos y configuración en 5.2 y 5.3…).

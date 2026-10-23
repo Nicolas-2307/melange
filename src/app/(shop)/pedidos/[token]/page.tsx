@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { formatDeliveryDate } from "@/features/checkout/availability";
 import { getPickupAddress } from "@/features/checkout/store";
 import { getOrderByToken, toPaymentOrder } from "@/features/orders/queries";
+import { ORDER_STATUS_LABEL } from "@/features/orders/status";
 import { formatCOP } from "@/lib/format";
 import { getPaymentProvider } from "@/services/payments";
 
@@ -21,15 +22,6 @@ export default function OrderPage({ params }: PageProps<"/pedidos/[token]">) {
   );
 }
 
-const STATUS_LABEL = {
-  PENDING: "Pendiente de confirmación",
-  CONFIRMED: "Confirmado",
-  PREPARING: "En preparación",
-  READY: "Listo",
-  COMPLETED: "Entregado",
-  CANCELLED: "Cancelado",
-} as const;
-
 async function OrderContent({ params }: Pick<PageProps<"/pedidos/[token]">, "params">) {
   const order = await getOrderByToken((await params).token);
   if (!order) notFound();
@@ -44,7 +36,7 @@ async function OrderContent({ params }: Pick<PageProps<"/pedidos/[token]">, "par
   return (
     <>
       <div className="flex flex-col gap-2">
-        <p className="text-sm text-zinc-500">{STATUS_LABEL[order.status]}</p>
+        <p className="text-sm text-zinc-500">{ORDER_STATUS_LABEL[order.status]}</p>
         <h1 className="text-3xl font-semibold tracking-tight">Pedido #{order.number}</h1>
         <p className="text-zinc-600 dark:text-zinc-400">Gracias, {order.customerName}.</p>
       </div>
