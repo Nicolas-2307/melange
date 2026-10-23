@@ -141,13 +141,43 @@ async function main() {
     }
   }
 
-  const [categories, products, variants] = await Promise.all([
+  // Store settings and zones are created once and then owned by the admin panel:
+  // re-running the seed never overwrites what the owner changed.
+  await db.storeSettings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      pickupAddress: "Parque de La Floresta, Medellín",
+      minLeadDays: 1,
+      openWeekdays: [0, 2, 3, 4, 5, 6], // Tuesday to Sunday
+    },
+  });
+
+  if ((await db.deliveryZone.count()) === 0) {
+    // Example fees by distance from the store (Parque de La Floresta). The owner adjusts them.
+    const zones = [
+      { name: "La Floresta, La América, Calasanz", fee: 5000 },
+      { name: "Laureles, Estadio, Conquistadores", fee: 6000 },
+      { name: "Belén, San Javier, Robledo", fee: 8000 },
+      { name: "Centro, Buenos Aires", fee: 9000 },
+      { name: "El Poblado, Guayabal", fee: 10000 },
+      { name: "Envigado, Itagüí", fee: 13000 },
+      { name: "Bello, Sabaneta", fee: 15000 },
+    ];
+    await db.deliveryZone.createMany({
+      data: zones.map((zone, sortOrder) => ({ ...zone, sortOrder })),
+    });
+  }
+
+  const [categories, products, variants, zones] = await Promise.all([
     db.category.count(),
     db.product.count(),
     db.productVariant.count(),
+    db.deliveryZone.count(),
   ]);
   console.log(
-    `✅ Seed listo: ${categories} categorías, ${products} productos, ${variants} variantes.`,
+    `✅ Seed listo: ${categories} categorías, ${products} productos, ${variants} variantes, ${zones} zonas de domicilio.`,
   );
 }
 

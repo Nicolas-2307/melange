@@ -212,6 +212,48 @@ model CartItem {
 }
 
 // ---------------------------------------------------------------------------
+// Store settings (edited by the owner in the admin panel)
+// ---------------------------------------------------------------------------
+
+/// Delivery area with its own fee, e.g. "Laureles – Estadio" → 6.000.
+model DeliveryZone {
+  id        String   @id @default(cuid())
+  name      String
+  /// COP (integer).
+  fee       Int
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("delivery_zones")
+}
+
+/// Single row (id = 1) with the availability rules and pickup point.
+model StoreSettings {
+  id              Int      @id @default(1)
+  pickupAddress   String
+  /// Earliest delivery date = today (Bogotá) + minLeadDays.
+  minLeadDays     Int      @default(1)
+  /// Days the store delivers: 0 = Sunday … 6 = Saturday.
+  openWeekdays    Int[]    @default([0, 2, 3, 4, 5, 6])
+  /// Max orders per delivery date; null = no limit.
+  maxOrdersPerDay Int?
+  updatedAt       DateTime @updatedAt
+
+  @@map("store_settings")
+}
+
+/// Dates the store can't deliver (holidays, vacations).
+model BlockedDate {
+  id     String   @id @default(cuid())
+  date   DateTime @unique @db.Date
+  reason String?
+
+  @@map("blocked_dates")
+}
+
+// ---------------------------------------------------------------------------
 // Orders and payments
 // ---------------------------------------------------------------------------
 
@@ -244,23 +286,27 @@ enum PaymentStatus {
 }
 
 model Order {
-  id     String      @id @default(cuid())
+  id          String      @id @default(cuid())
+  /// Random secret in the customer-facing URL (/pedidos/<token>); guests have no login.
+  publicToken String      @unique
   /// Human-friendly sequential number shown to customers (#1001).
-  number Int         @unique @default(autoincrement())
-  userId String?
-  status OrderStatus @default(PENDING)
+  number      Int         @unique @default(autoincrement())
+  userId      String?
+  status      OrderStatus @default(PENDING)
 
   // Contact snapshot: guests have no user account.
   customerName  String
   customerEmail String
   customerPhone String
 
-  fulfillmentType FulfillmentType
+  fulfillmentType  FulfillmentType
+  /// Snapshot of the delivery zone name (zones can be renamed or removed later).
+  deliveryZoneName String?
   /// Requested delivery/pickup date (Bogotá calendar day).
-  deliveryDate    DateTime        @db.Date
-  deliveryAddress String?
-  deliveryCity    String?
-  notes           String?
+  deliveryDate     DateTime        @db.Date
+  deliveryAddress  String?
+  deliveryCity     String?
+  notes            String?
 
   /// Amounts in COP (integers).
   subtotal     Int
@@ -276,6 +322,7 @@ model Order {
 
   @@index([userId])
   @@index([status, createdAt])
+  @@index([deliveryDate])
   @@index([customerEmail])
   @@map("orders")
 }

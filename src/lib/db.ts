@@ -12,10 +12,21 @@ function createClient() {
 }
 
 // Reuse one client across hot reloads in development to avoid exhausting connections.
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const globalForPrisma = globalThis as unknown as {
+  prisma?: PrismaClient;
+  prismaClass?: typeof PrismaClient;
+};
+
+// After `prisma generate` (new tables/columns) the client class changes: drop the stale
+// instance kept from before, or it would not know the new models until a restart.
+if (globalForPrisma.prisma && globalForPrisma.prismaClass !== PrismaClient) {
+  void globalForPrisma.prisma.$disconnect();
+  globalForPrisma.prisma = undefined;
+}
 
 export const db = globalForPrisma.prisma ?? createClient();
 
 if (env.NODE_ENV !== "production") {
   globalForPrisma.prisma = db;
+  globalForPrisma.prismaClass = PrismaClient;
 }

@@ -29,7 +29,8 @@ const serverSchema = z.object({
     .pipe(z.array(z.email("Cada correo de ADMIN_EMAILS debe ser válido"))),
 
   // Provider selection: swap providers by config, not code.
-  PAYMENT_PROVIDER: z.enum(["whatsapp", "wompi"]).default("whatsapp"),
+  // "wompi" is added in Paso 4.4, once the store has its Wompi account.
+  PAYMENT_PROVIDER: z.enum(["whatsapp"]).default("whatsapp"),
   STORAGE_PROVIDER: z.enum(["cloudinary"]).default("cloudinary"),
   EMAIL_PROVIDER: z.enum(["console"]).default("console"),
 });
