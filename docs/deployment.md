@@ -35,10 +35,31 @@ Las variables de Cloudinary y Wompi se añadirán aquí en los pasos 4 y 5.
 - Desarrollo: `npm run db:migrate` crea y aplica migraciones en la rama `dev`.
 - Producción: `npm run db:deploy` aplica las migraciones ya versionadas, sin crear nuevas.
 
+## Traspaso al propietario (antes de la primera venta)
+
+Mientras se desarrolla, las cuentas pueden ser del desarrollador con datos de prueba. Antes de
+vender, todo lo que maneja dinero o datos de clientes pasa al negocio (idealmente con un correo
+del negocio), y el desarrollador queda como miembro invitado. Como todo se configura con
+variables de entorno, el código no cambia.
+
+| Servicio         | Qué hacer                                                                                                    |
+| ---------------- | ------------------------------------------------------------------------------------------------------------ |
+| GitHub           | Settings → Danger Zone → Transfer ownership; luego `git remote set-url origin <nueva URL>`                   |
+| Neon             | Proyecto nuevo en la cuenta del negocio → `npm run db:deploy` → nuevas `DATABASE_URL`/`DIRECT_URL` en Vercel |
+| Vercel           | Cuenta o equipo del negocio importa el repo y carga las variables por ambiente                               |
+| Cloudinary       | Cuenta del negocio **antes** de subir fotos reales (las URLs incluyen el nombre de la cuenta)                |
+| Wompi            | Siempre del propietario; solo se cargan sus llaves                                                           |
+| WhatsApp         | `NEXT_PUBLIC_WHATSAPP_NUMBER` con el número del negocio                                                      |
+| Dominio y correo | A nombre del propietario desde el inicio                                                                     |
+
+Al terminar: nuevo `BETTER_AUTH_SECRET` de producción, regenerar claves que conoció el
+desarrollador (Neon, Cloudinary, Wompi) y revisar quién tiene acceso en cada servicio.
+
 ## Reglas
 
 - Los secretos reales solo viven en `.env.local` (tu equipo) y en Vercel. Nunca en Git.
 - Preview y Production **nunca** comparten llaves de Wompi ni base de datos.
+- Las URLs de Neon llevan `sslmode=verify-full` (con `require`, la librería `pg` muestra una advertencia).
 - Tras cambiar una variable en Vercel hay que **volver a desplegar** para que tome efecto.
 
 > Se completa en el Paso 6 (Vercel).

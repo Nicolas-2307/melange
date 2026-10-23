@@ -110,4 +110,23 @@ Código en `src/features/cart/`. Página `/carrito` y contador en el encabezado.
 - Toda acción (`actions.ts`) valida con Zod y solo toca ítems del carrito del visitante.
 - Pendiente: limpiar carritos de invitado abandonados (tarea programada, Paso 6).
 
-> Este documento se amplía en cada paso (checkout en el Paso 4.3…).
+## Checkout y pedidos
+
+Código en `src/features/checkout/` y `src/features/orders/`. Rutas `/checkout` y `/pedidos/[token]`.
+
+- **Entrega:** a domicilio (zona con su costo) o recoger en la sede (Parque de La Floresta).
+  Las zonas (`delivery_zones`) y la disponibilidad (`store_settings`, `blocked_dates`) viven en
+  la base de datos; el dueño las editará en el panel (Paso 5).
+- **Fechas:** día calendario de Bogotá. Se ofrecen las que cumplen anticipación mínima, días de
+  trabajo, fechas bloqueadas y cupo diario (`availability.ts`, funciones puras con pruebas).
+- **`placeOrder` recalcula todo en el servidor:** precios desde la base de datos, costo de la
+  zona y disponibilidad de la fecha. Los totales del formulario son solo informativos.
+- **Pedido:** número visible desde #1001, copia de productos y precios (`order_items`), un
+  `Payment` por intento y vaciado del carrito, todo en una transacción.
+- **Enlace del pedido:** `/pedidos/<token>` con un token aleatorio de 32 caracteres (los
+  invitados no tienen cuenta). No se indexa y se envía por correo al cliente.
+- **Pago:** detrás de `PaymentProvider` (`src/services/payments/`), elegido con
+  `PAYMENT_PROVIDER`. Hoy `whatsapp`: el cliente envía el pedido con un mensaje ya armado y el
+  dueño confirma y acuerda el pago. En el Paso 4.4 se agrega `wompi` sin tocar el checkout.
+
+> Este documento se amplía en cada paso (panel del dueño en el Paso 5…).

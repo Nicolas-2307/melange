@@ -47,13 +47,12 @@ async function CartContent() {
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           El domicilio y la fecha de entrega se eligen en el siguiente paso.
         </p>
-        {/* Checkout arrives in Paso 4.3. */}
-        <span
-          aria-disabled="true"
-          className="inline-flex h-12 items-center justify-center rounded-lg bg-zinc-300 px-8 text-sm font-medium text-zinc-600 sm:w-fit dark:bg-zinc-800 dark:text-zinc-400"
+        <Link
+          href="/checkout"
+          className="inline-flex h-12 items-center justify-center rounded-lg bg-zinc-900 px-8 text-sm font-medium text-white hover:bg-zinc-700 sm:w-fit dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
         >
-          Continuar al pago (próximamente)
-        </span>
+          Continuar
+        </Link>
       </div>
     </>
   );
