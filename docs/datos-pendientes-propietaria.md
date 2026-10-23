@@ -14,15 +14,15 @@ de entorno** (en `.env.local` y en Vercel) o se edita en el **panel** (Paso 5).
 
 ## Contacto y negocio
 
-| Dato                                                             | Dónde va                                               | Valor de ejemplo                  | Estado |
-| ---------------------------------------------------------------- | ------------------------------------------------------ | --------------------------------- | ------ |
-| Número de WhatsApp del negocio                                   | `NEXT_PUBLIC_WHATSAPP_NUMBER`                          | `570000000000`                    | ⏳     |
-| Correo(s) de quien administrará el panel                         | `ADMIN_EMAILS`                                         | Correo del desarrollador          | ⏳     |
-| Dirección exacta de la sede (recogidas)                          | Panel → Configuración (`store_settings.pickupAddress`) | "Parque de La Floresta, Medellín" | ⏳     |
-| Nombre comercial definitivo, logo y colores                      | `public/`, textos de la tienda                         | "Melange", sin logo               | ⏳     |
-| Datos legales (razón social, NIT o RUT)                          | Pie de página, políticas                               | —                                 | ⏳     |
-| Política de privacidad y tratamiento de datos (Ley 1581 de 2012) | Página legal                                           | —                                 | ⏳     |
-| Términos y condiciones, cambios y devoluciones                   | Página legal                                           | —                                 | ⏳     |
+| Dato                                                             | Dónde va                       | Valor de ejemplo                  | Estado |
+| ---------------------------------------------------------------- | ------------------------------ | --------------------------------- | ------ |
+| Número de WhatsApp del negocio                                   | `NEXT_PUBLIC_WHATSAPP_NUMBER`  | `570000000000`                    | ⏳     |
+| Correo(s) de quien administrará el panel                         | `ADMIN_EMAILS`                 | Correo del desarrollador          | ⏳     |
+| Dirección exacta de la sede (recogidas)                          | Panel → Configuración          | "Parque de La Floresta, Medellín" | ⏳     |
+| Nombre comercial definitivo, logo y colores                      | `public/`, textos de la tienda | "Melange", sin logo               | ⏳     |
+| Datos legales (razón social, NIT o RUT)                          | Pie de página, políticas       | —                                 | ⏳     |
+| Política de privacidad y tratamiento de datos (Ley 1581 de 2012) | Página legal                   | —                                 | ⏳     |
+| Términos y condiciones, cambios y devoluciones                   | Página legal                   | —                                 | ⏳     |
 
 ## Catálogo y operación
 
@@ -32,7 +32,7 @@ de entorno** (en `.env.local` y en Vercel) o se edita en el **panel** (Paso 5).
 | Precios                                    | Panel → Productos                 | Precios inventados                        | ⏳     |
 | Fotos de los productos                     | Panel → Productos (Cloudinary)    | Ilustraciones provisionales               | ⏳     |
 | Categorías                                 | Panel → Categorías                | Tortas, Galletas, Postres                 | ⏳     |
-| Zonas de domicilio y su costo              | Panel → Zonas (`delivery_zones`)  | 7 zonas desde La Floresta, $5.000–$15.000 | ⏳     |
+| Zonas de domicilio y su costo              | Panel → Configuración → Zonas     | 7 zonas desde La Floresta, $5.000–$15.000 | ⏳     |
 | Días de trabajo                            | Panel → Configuración             | Martes a domingo                          | ⏳     |
 | Anticipación mínima de pedidos             | Panel → Configuración             | 1 día                                     | ⏳     |
 | Fechas sin servicio (festivos, vacaciones) | Panel → Calendario → Bloquear día | Ninguna                                   | ⏳     |

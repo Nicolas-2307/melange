@@ -4,6 +4,14 @@ import { availableDates, todayInBogota, type AvailabilityRules } from "./availab
 
 export type DeliveryZoneOption = { id: string; name: string; fee: number };
 
+/** All zones, including hidden ones (admin only). */
+export async function getAllDeliveryZones() {
+  return db.deliveryZone.findMany({
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    select: { id: true, name: true, fee: true, sortOrder: true, isActive: true },
+  });
+}
+
 /** Active delivery zones, in the owner's order. */
 export async function getDeliveryZones(): Promise<DeliveryZoneOption[]> {
   return db.deliveryZone.findMany({
@@ -13,7 +21,7 @@ export async function getDeliveryZones(): Promise<DeliveryZoneOption[]> {
   });
 }
 
-async function getStoreSettings() {
+export async function getStoreSettings() {
   const settings = await db.storeSettings.findUnique({ where: { id: 1 } });
   if (!settings) throw new Error("Store settings missing: run `npm run db:seed`.");
   return settings;
