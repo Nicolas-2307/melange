@@ -26,17 +26,17 @@ de entorno** (en `.env.local` y en Vercel) o se edita en el **panel** (Paso 5).
 
 ## Catálogo y operación
 
-| Dato                                       | Dónde va                         | Valor de ejemplo                          | Estado |
-| ------------------------------------------ | -------------------------------- | ----------------------------------------- | ------ |
-| Productos, descripciones y presentaciones  | Panel → Productos                | 7 productos del seed                      | ⏳     |
-| Precios                                    | Panel → Productos                | Precios inventados                        | ⏳     |
-| Fotos de los productos                     | Panel → Productos (Cloudinary)   | Ilustraciones provisionales               | ⏳     |
-| Categorías                                 | Panel → Categorías               | Tortas, Galletas, Postres                 | ⏳     |
-| Zonas de domicilio y su costo              | Panel → Zonas (`delivery_zones`) | 7 zonas desde La Floresta, $5.000–$15.000 | ⏳     |
-| Días de trabajo                            | Panel → Configuración            | Martes a domingo                          | ⏳     |
-| Anticipación mínima de pedidos             | Panel → Configuración            | 1 día                                     | ⏳     |
-| Fechas sin servicio (festivos, vacaciones) | Panel → Fechas bloqueadas        | Ninguna                                   | ⏳     |
-| Máximo de pedidos por día                  | Panel → Configuración            | Sin límite                                | ⏳     |
+| Dato                                       | Dónde va                          | Valor de ejemplo                          | Estado |
+| ------------------------------------------ | --------------------------------- | ----------------------------------------- | ------ |
+| Productos, descripciones y presentaciones  | Panel → Productos                 | 7 productos del seed                      | ⏳     |
+| Precios                                    | Panel → Productos                 | Precios inventados                        | ⏳     |
+| Fotos de los productos                     | Panel → Productos (Cloudinary)    | Ilustraciones provisionales               | ⏳     |
+| Categorías                                 | Panel → Categorías                | Tortas, Galletas, Postres                 | ⏳     |
+| Zonas de domicilio y su costo              | Panel → Zonas (`delivery_zones`)  | 7 zonas desde La Floresta, $5.000–$15.000 | ⏳     |
+| Días de trabajo                            | Panel → Configuración             | Martes a domingo                          | ⏳     |
+| Anticipación mínima de pedidos             | Panel → Configuración             | 1 día                                     | ⏳     |
+| Fechas sin servicio (festivos, vacaciones) | Panel → Calendario → Bloquear día | Ninguna                                   | ⏳     |
+| Máximo de pedidos por día                  | Panel → Configuración             | Sin límite                                | ⏳     |
 
 ## Cuentas de servicios (a nombre del negocio)
 
