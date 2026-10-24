@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   // Absolute base for Open Graph images and canonical URLs.
-  metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
+  metadataBase: new URL(env.SITE_URL),
   title: "Melange · Repostería",
   description: "Postres, galletas y pasteles en Colombia.",
 };

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["iad1"],
+  "buildCommand": "npm run db:deploy && npm run build",
+  "git": {
+    "deploymentEnabled": {
+      "main": false
+    }
+  }
+}

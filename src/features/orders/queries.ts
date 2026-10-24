@@ -46,7 +46,7 @@ export async function getOrderByToken(token: string) {
 export type OrderDetail = NonNullable<Awaited<ReturnType<typeof getOrderByToken>>>;
 
 export function orderUrl(token: string) {
-  return new URL(`/pedidos/${token}`, env.NEXT_PUBLIC_SITE_URL).toString();
+  return new URL(`/pedidos/${token}`, env.SITE_URL).toString();
 }
 
 /** Shapes an order for the payment provider. */

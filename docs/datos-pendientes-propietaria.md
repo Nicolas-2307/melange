@@ -54,15 +54,15 @@ Solo hace falta cuando se implemente el chatbot: [issue #12](https://github.com/
 
 Detalle del traspaso en [deployment.md](deployment.md#traspaso-al-propietario-antes-de-la-primera-venta).
 
-| Cuenta                            | Para qué                                | Mientras tanto                               | Estado |
-| --------------------------------- | --------------------------------------- | -------------------------------------------- | ------ |
-| Correo del negocio                | Abrir todas las demás cuentas           | —                                            | ⏳     |
-| Wompi (comercio)                  | Pagos en línea (Paso 4.4)               | Pedido por WhatsApp; Wompi en pausa          | ⏳     |
-| Llaves de prueba de Wompi         | Desarrollar el Paso 4.4                 | —                                            | ⏳     |
-| Llaves de producción de Wompi     | Cobrar de verdad                        | —                                            | ⏳     |
-| Cloudinary                        | Fotos reales                            | Cuenta del desarrollador con fotos de prueba | ⏳     |
-| Neon (base de producción)         | Pedidos y clientes reales               | Cuenta del desarrollador, rama `dev`         | ⏳     |
-| Vercel (plan con uso comercial)   | Publicar la tienda                      | Aún no se usa                                | ⏳     |
-| Dominio (ej. `melange.co`)        | Dirección de la tienda                  | —                                            | ⏳     |
-| Proveedor de correo transaccional | Confirmaciones y verificación de correo | Correos impresos en la consola               | ⏳     |
-| GitHub (organización del negocio) | Dueña del código                        | Repo en la cuenta del desarrollador          | ⏳     |
+| Cuenta                            | Para qué                                | Mientras tanto                                               | Estado |
+| --------------------------------- | --------------------------------------- | ------------------------------------------------------------ | ------ |
+| Correo del negocio                | Abrir todas las demás cuentas           | —                                                            | ⏳     |
+| Wompi (comercio)                  | Pagos en línea (Paso 4.4)               | Pedido por WhatsApp; Wompi en pausa                          | ⏳     |
+| Llaves de prueba de Wompi         | Desarrollar el Paso 4.4                 | —                                                            | ⏳     |
+| Llaves de producción de Wompi     | Cobrar de verdad                        | —                                                            | ⏳     |
+| Cloudinary                        | Fotos reales                            | Cuenta del desarrollador con fotos de prueba                 | ⏳     |
+| Neon (base de producción)         | Pedidos y clientes reales               | Cuenta del desarrollador, rama `dev`                         | ⏳     |
+| Vercel Pro (uso comercial)        | Publicar la tienda                      | Previews en la cuenta Hobby del desarrollador (no comercial) | ⏳     |
+| Dominio (ej. `melange.co`)        | Dirección de la tienda                  | —                                                            | ⏳     |
+| Proveedor de correo transaccional | Confirmaciones y verificación de correo | Correos impresos en la consola                               | ⏳     |
+| GitHub (organización del negocio) | Dueña del código                        | Repo en la cuenta del desarrollador                          | ⏳     |
