@@ -1,0 +1,372 @@
+// Melange data model.
+// Money: COP as Int (no decimals). Tables in snake_case plural via @@map.
+// Connection URLs live in prisma.config.ts (CLI) and src/lib/db.ts (runtime).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Users
+// ---------------------------------------------------------------------------
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  phone         String?
+  role          Role     @default(CUSTOMER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions Session[]
+  accounts Account[]
+  cart     Cart?
+  orders   Order[]
+
+  @@map("users")
+}
+
+// Better Auth tables (shape required by better-auth; regenerate reference with `npx auth generate`).
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+/// Login methods of a user. Email/password uses providerId "credential"; the hash lives in `password`.
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+/// Email verification and password reset tokens.
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+/// Auth rate limiting shared across serverless instances.
+model RateLimit {
+  id          String @id
+  key         String @unique
+  count       Int
+  lastRequest BigInt
+
+  @@map("rate_limits")
+}
+
+// ---------------------------------------------------------------------------
+// Catalog
+// ---------------------------------------------------------------------------
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String
+  isActive    Boolean  @default(true)
+  isFeatured  Boolean  @default(false)
+  categoryId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category Category         @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  variants ProductVariant[]
+  images   ProductImage[]
+
+  @@index([categoryId])
+  @@index([isActive, isFeatured])
+  @@map("products")
+}
+
+/// A sellable option of a product, e.g. "8 porciones" or "Caja x12". Every product has ≥ 1.
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String
+  name      String
+  /// Price in COP (integer, no decimals).
+  price     Int
+  sku       String?  @unique
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id         String   @id @default(cuid())
+  productId  String
+  url        String
+  /// Provider-specific identifier (e.g. Cloudinary public_id), used to delete/transform.
+  storageKey String?
+  alt        String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// ---------------------------------------------------------------------------
+// Cart (guests: cart id stored in an httpOnly cookie; users: linked by userId)
+// ---------------------------------------------------------------------------
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@index([updatedAt])
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  variantId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, variantId])
+  @@index([variantId])
+  @@map("cart_items")
+}
+
+// ---------------------------------------------------------------------------
+// Store settings (edited by the owner in the admin panel)
+// ---------------------------------------------------------------------------
+
+/// Delivery area with its own fee, e.g. "Laureles – Estadio" → 6.000.
+model DeliveryZone {
+  id        String   @id @default(cuid())
+  name      String
+  /// COP (integer).
+  fee       Int
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("delivery_zones")
+}
+
+/// Single row (id = 1) with the availability rules and pickup point.
+model StoreSettings {
+  id              Int      @id @default(1)
+  pickupAddress   String
+  /// Earliest delivery date = today (Bogotá) + minLeadDays.
+  minLeadDays     Int      @default(1)
+  /// Days the store delivers: 0 = Sunday … 6 = Saturday.
+  openWeekdays    Int[]    @default([0, 2, 3, 4, 5, 6])
+  /// Max orders per delivery date; null = no limit.
+  maxOrdersPerDay Int?
+  updatedAt       DateTime @updatedAt
+
+  @@map("store_settings")
+}
+
+/// Dates the store can't deliver (holidays, vacations).
+model BlockedDate {
+  id     String   @id @default(cuid())
+  date   DateTime @unique @db.Date
+  reason String?
+
+  @@map("blocked_dates")
+}
+
+// ---------------------------------------------------------------------------
+// Orders and payments
+// ---------------------------------------------------------------------------
+
+enum OrderStatus {
+  PENDING // created, waiting for payment or owner confirmation
+  CONFIRMED // paid (Wompi) or confirmed by the owner (WhatsApp)
+  PREPARING
+  READY // ready for pickup or out for delivery
+  COMPLETED
+  CANCELLED
+}
+
+enum FulfillmentType {
+  DELIVERY
+  PICKUP
+}
+
+enum PaymentProvider {
+  WOMPI
+  WHATSAPP
+}
+
+/// Mirrors Wompi transaction statuses.
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  DECLINED
+  VOIDED
+  ERROR
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  /// Random secret in the customer-facing URL (/pedidos/<token>); guests have no login.
+  publicToken String      @unique
+  /// Human-friendly sequential number shown to customers (#1001).
+  number      Int         @unique @default(autoincrement())
+  userId      String?
+  status      OrderStatus @default(PENDING)
+
+  // Contact snapshot: guests have no user account.
+  customerName  String
+  customerEmail String
+  customerPhone String
+
+  fulfillmentType  FulfillmentType
+  /// Snapshot of the delivery zone name (zones can be renamed or removed later).
+  deliveryZoneName String?
+  /// Requested delivery/pickup date (Bogotá calendar day).
+  deliveryDate     DateTime        @db.Date
+  deliveryAddress  String?
+  deliveryCity     String?
+  notes            String?
+
+  /// Amounts in COP (integers).
+  subtotal     Int
+  shippingCost Int @default(0)
+  total        Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items    OrderItem[]
+  payments Payment[]
+
+  @@index([userId])
+  @@index([status, createdAt])
+  @@index([deliveryDate])
+  @@index([customerEmail])
+  @@map("orders")
+}
+
+/// Snapshot of what was bought: product/variant names and price are copied at checkout.
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  variantId   String?
+  productName String
+  variantName String
+  /// COP (integer).
+  unitPrice   Int
+  quantity    Int
+  /// unitPrice * quantity, COP (integer).
+  lineTotal   Int
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([variantId])
+  @@map("order_items")
+}
+
+/// One row per payment attempt (a retry with Wompi needs a new reference).
+model Payment {
+  id                    String          @id @default(cuid())
+  orderId               String
+  provider              PaymentProvider
+  status                PaymentStatus   @default(PENDING)
+  /// Our unique reference sent to the provider.
+  reference             String          @unique
+  /// Provider transaction id (Wompi), set by the webhook.
+  providerTransactionId String?         @unique
+  /// COP (integer).
+  amount                Int
+  /// Last raw event from the provider, for auditing.
+  rawPayload            Json?
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("payments")
+}

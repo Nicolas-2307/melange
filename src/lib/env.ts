@@ -6,24 +6,67 @@ import { z } from "zod";
  * Add each new variable here AND in .env.example (and docs/deployment.md).
  */
 
+// Treat `VAR=` (empty) in .env files as "not set".
+const optional = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (value === "" ? undefined : value), schema.optional());
+
 const serverSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 
+  // Pooled connection (host with "-pooler") used by the app at runtime.
+  DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
+
+  // Signs session cookies and tokens. At least 32 random characters.
+  BETTER_AUTH_SECRET: z.string().min(32, "Debe tener al menos 32 caracteres aleatorios"),
+  // Comma-separated list. Each account becomes ADMIN once its email is verified.
+  ADMIN_EMAILS: optional(z.string())
+    .transform((value) =>
+      (value ?? "")
+        .split(",")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean),
+    )
+    .pipe(z.array(z.email("Cada correo de ADMIN_EMAILS debe ser válido"))),
+
   // Provider selection: swap providers by config, not code.
-  PAYMENT_PROVIDER: z.enum(["whatsapp", "wompi"]).default("whatsapp"),
+  // "wompi" is added in Paso 4.4, once the store has its Wompi account.
+  PAYMENT_PROVIDER: z.enum(["whatsapp"]).default("whatsapp"),
   STORAGE_PROVIDER: z.enum(["cloudinary"]).default("cloudinary"),
   EMAIL_PROVIDER: z.enum(["console"]).default("console"),
+
+  // Set by Vercel on every deployment (host only, no "https://"). Previews get a new URL
+  // each time, so these are used when NEXT_PUBLIC_SITE_URL is not set.
+  VERCEL_URL: optional(z.string()),
+  VERCEL_BRANCH_URL: optional(z.string()),
 });
 
 // NEXT_PUBLIC_* values are inlined into the browser bundle: never put secrets here.
 const clientSchema = z.object({
-  NEXT_PUBLIC_SITE_URL: z.url(),
+  // Fixed public URL (local and production). Optional on Vercel previews.
+  NEXT_PUBLIC_SITE_URL: optional(z.url()),
   NEXT_PUBLIC_WHATSAPP_NUMBER: z
     .string()
     .regex(/^57\d{10}$/, "Debe ser un número colombiano con indicativo, sin '+': 57XXXXXXXXXX"),
 });
 
-const schema = serverSchema.extend(clientSchema.shape);
+const https = (host: string | undefined) => (host ? `https://${host}` : undefined);
+
+const schema = serverSchema
+  .extend(clientSchema.shape)
+  .refine((vars) => vars.NEXT_PUBLIC_SITE_URL || vars.VERCEL_BRANCH_URL || vars.VERCEL_URL, {
+    message: "Define NEXT_PUBLIC_SITE_URL (en Vercel se toma de VERCEL_BRANCH_URL)",
+    path: ["NEXT_PUBLIC_SITE_URL"],
+  })
+  .transform((vars) => {
+    const siteUrl = (vars.NEXT_PUBLIC_SITE_URL ??
+      https(vars.VERCEL_BRANCH_URL) ??
+      https(vars.VERCEL_URL)) as string;
+    // Origins allowed to call the auth API: the site plus both Vercel URLs of a preview.
+    const trustedOrigins = [siteUrl, https(vars.VERCEL_BRANCH_URL), https(vars.VERCEL_URL)].filter(
+      (origin, index, all): origin is string => Boolean(origin) && all.indexOf(origin) === index,
+    );
+    return { ...vars, SITE_URL: siteUrl, TRUSTED_ORIGINS: trustedOrigins };
+  });
 
 function parseEnv() {
   const result = schema.safeParse(process.env);
@@ -35,4 +78,4 @@ function parseEnv() {
 }
 
 export const env = parseEnv();
-export type Env = z.infer<typeof schema>;
+export type Env = z.output<typeof schema>;

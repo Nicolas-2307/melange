@@ -14,7 +14,7 @@ Tienda online de repostería (postres, galletas, pasteles) en Colombia.
 ## Stack
 
 Next.js (App Router) + TypeScript estricto · Tailwind CSS · PostgreSQL (Neon) + Prisma ·
-Auth.js · Cloudinary · Wompi + WhatsApp · Zod · Vitest + Playwright · Vercel · npm.
+Better Auth · Cloudinary · Wompi + WhatsApp · Zod · Vitest + Playwright · Vercel · npm.
 
 ## Estructura
 
@@ -29,15 +29,19 @@ Auth.js · Cloudinary · Wompi + WhatsApp · Zod · Vitest + Playwright · Verce
 
 ## Comandos
 
-| Comando             | Qué hace                                        |
-| ------------------- | ----------------------------------------------- |
-| `npm run dev`       | Servidor de desarrollo en http://localhost:3000 |
-| `npm run lint`      | ESLint (0 advertencias permitidas)              |
-| `npm run typecheck` | Tipos de rutas + `tsc --noEmit`                 |
-| `npm test`          | Pruebas unitarias (Vitest)                      |
-| `npm run test:e2e`  | Pruebas e2e (Playwright)                        |
-| `npm run build`     | Build de producción                             |
-| `npm run format`    | Prettier en todo el repo                        |
+| Comando              | Qué hace                                        |
+| -------------------- | ----------------------------------------------- |
+| `npm run dev`        | Servidor de desarrollo en http://localhost:3000 |
+| `npm run lint`       | ESLint (0 advertencias permitidas)              |
+| `npm run typecheck`  | Tipos de rutas + `tsc --noEmit`                 |
+| `npm test`           | Pruebas unitarias (Vitest)                      |
+| `npm run test:e2e`   | Pruebas e2e (Playwright)                        |
+| `npm run db:migrate` | Crea y aplica una migración (desarrollo)        |
+| `npm run db:deploy`  | Aplica migraciones pendientes (producción)      |
+| `npm run db:seed`    | Carga productos de ejemplo                      |
+| `npm run db:studio`  | Explorador visual de la base de datos           |
+| `npm run build`      | Build de producción                             |
+| `npm run format`     | Prettier en todo el repo                        |
 
 Antes de dar una tarea por terminada: `npm run lint && npm run typecheck && npm test && npm run build`.
 
@@ -49,6 +53,15 @@ Antes de dar una tarea por terminada: `npm run lint && npm run typecheck && npm 
   Cada variable nueva va en `env.ts`, `.env.example` y `docs/deployment.md`.
 - Server Components por defecto; `"use client"` solo cuando haga falta interactividad.
 - Montos siempre en enteros COP; nunca calcular precios en el cliente sin revalidar en el servidor.
+- Lecturas del catálogo en `src/features/catalog/queries.ts` (cacheadas). Toda escritura de
+  productos/categorías llama `updateTag(CATALOG_TAG)`.
+
+## Datos de la propietaria
+
+La dueña del negocio aún no ha entregado sus datos ni sus cuentas. Todo lo que dependa de ella
+(número de WhatsApp, cuentas, precios, fotos, zonas, datos legales…) usa **valores de ejemplo**
+configurables y nunca bloquea el trabajo. Si un cambio agrega o quita algo que ella debe
+entregar, **actualiza `docs/datos-pendientes-propietaria.md` en el mismo PR**.
 
 ## Flujo de Git
 

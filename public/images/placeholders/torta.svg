@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-label="Ilustración de torta">
+  <rect width="400" height="400" fill="#FBEFE6"/>
+  <ellipse cx="200" cy="300" rx="130" ry="22" fill="#EAD3C3"/>
+  <rect x="90" y="190" width="220" height="105" rx="14" fill="#7A4A35"/>
+  <rect x="90" y="190" width="220" height="30" rx="14" fill="#F6E1D3"/>
+  <path d="M90 214c18 0 18 22 36 22s18-22 37-22 18 22 37 22 18-22 36-22 18 22 37 22 18-22 37-22" fill="none" stroke="#F6E1D3" stroke-width="14" stroke-linecap="round"/>
+  <rect x="120" y="120" width="160" height="72" rx="12" fill="#9B5F45"/>
+  <rect x="120" y="120" width="160" height="22" rx="11" fill="#F6E1D3"/>
+  <rect x="195" y="78" width="10" height="44" rx="4" fill="#E9A27A"/>
+  <path d="M200 58c8 10 8 18 0 22-8-4-8-12 0-22z" fill="#F2C14E"/>
+</svg>
