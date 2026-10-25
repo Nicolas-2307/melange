@@ -37,21 +37,21 @@ propietaria** (ver [datos-pendientes-propietaria.md](datos-pendientes-propietari
 | Recuperar contraseña                                                          | ✅                         | #22                                                                          |
 | Páginas legales (plantillas) + autorización de datos                          | ✅                         | #23                                                                          |
 | "Mis pedidos" para clientes con cuenta                                        | ✅                         | #25                                                                          |
-| SEO básico (`sitemap.xml`, `robots.txt`, datos estructurados)                 | ⏳ Siguiente               | —                                                                            |
-| Mantenimiento: ESLint 10, `e2e` obligatorio en Rulesets, limpieza de carritos | ⏳                         | —                                                                            |
+| SEO básico (`sitemap.xml`, `robots.txt`, datos estructurados)                 | ✅                         | #26                                                                          |
+| Mantenimiento: ESLint 10, `e2e` obligatorio en Rulesets, limpieza de carritos | ⏳ Siguiente               | —                                                                            |
 | Chatbot                                                                       | ⏳ Después del lanzamiento | [#12](https://github.com/Nicolas-2307/melange/issues/12)                     |
 
 ## En qué vamos
 
 **Bloque "previo al lanzamiento".** Terminado: auditoría, recuperación de contraseña, páginas
-legales y "Mis pedidos". Falta de este bloque: SEO básico y mantenimiento.
+legales, "Mis pedidos" y SEO básico. Falta de este bloque: mantenimiento.
 
 "Mis pedidos" (`/cuenta/pedidos`) muestra solo los pedidos hechos con la sesión iniciada
 (`orders.userId`). A propósito **no** incluye pedidos de invitado con el mismo correo: cualquiera
 puede registrar un correo ajeno y vería direcciones y teléfonos de otra persona.
 
 La promoción `dev → qa` más reciente fue la #20. Desde entonces `dev` acumula #18, #19, #1, #22,
-#23, #24 y #25: conviene promover a `qa` al cerrar el bloque.
+#23, #24, #25 y #26: conviene promover a `qa` al cerrar el bloque.
 
 ## Decisiones tomadas
 
@@ -95,17 +95,20 @@ chatbot, cada uno merece el suyo.
   puede quedarse con módulos viejos). No correr `npm ci` con `npm run dev` abierto (Windows
   bloquea archivos de `node_modules`).
 
+SEO básico: `src/app/sitemap.ts` (catálogo cacheado), `src/app/robots.ts` (bloquea páginas
+privadas; en previews de Vercel bloquea todo) y JSON-LD `Product` con URL canónica en cada
+producto (`src/features/catalog/seo.ts`). Con el dominio real basta definir
+`NEXT_PUBLIC_SITE_URL` en Production.
+
 ## Siguiente paso exacto
 
 1. Actualizar `dev` local (`git switch dev` y `git pull`) y reiniciar `npm run dev`.
-2. Crear `feature/seo-basics` desde `dev` y construir el **SEO básico**:
-   - `src/app/sitemap.ts` con inicio, catálogo, categorías y productos activos (lecturas de
-     `src/features/catalog/queries.ts`) y URLs absolutas con `env.SITE_URL`;
-   - `src/app/robots.ts`: permitir la tienda, bloquear `/admin`, `/api`, `/cuenta`,
-     `/carrito`, `/checkout` y `/pedidos`; en previews (`VERCEL_ENV` distinto de
-     `production`) bloquear todo;
-   - datos estructurados `Product` (JSON-LD, precios en COP) en `/productos/[slug]`;
-   - `metadataBase` y descripciones por página;
-   - pruebas: e2e de `/robots.txt`, `/sitemap.xml` y del JSON-LD de un producto.
-     Antes, leer la guía de metadatos en `node_modules/next/dist/docs/`.
-3. Después: mantenimiento y promoción `dev → qa`.
+2. Crear `chore/maintenance` desde `dev`:
+   - limpieza de carritos de invitado viejos (p. ej. sin cambios en 30 días) con un Vercel Cron
+     protegido por `CRON_SECRET` (variable nueva en `env.ts`, `.env.example` y
+     `docs/deployment.md`); verificar límites del plan Hobby en la documentación actual;
+   - evaluar ESLint 10 con `eslint-config-next` (subir solo si es compatible);
+   - pedir al desarrollador marcar `e2e` como check obligatorio en los Rulesets (lo hace él en
+     GitHub).
+3. Después: promoción `dev → qa` (merge commit) y revisar pendientes de
+   [#21](https://github.com/Nicolas-2307/melange/issues/21).
