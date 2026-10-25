@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { privacyConsent } from "@/features/auth/schemas";
+
 /** Colombian mobile number: 10 digits starting with 3. Spaces, dashes and +57 are accepted. */
 const phone = z
   .string()
@@ -14,6 +16,7 @@ const base = {
   email: z.string().trim().toLowerCase().pipe(z.email("Escribe un correo válido")),
   deliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Elige una fecha"),
   notes: z.string().trim().max(500, "Máximo 500 caracteres").optional(),
+  privacyAccepted: privacyConsent,
 };
 
 export const checkoutSchema = z.discriminatedUnion("fulfillmentType", [

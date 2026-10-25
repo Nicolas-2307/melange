@@ -2,6 +2,11 @@ import { z } from "zod";
 
 const email = z.string().trim().toLowerCase().pipe(z.email("Escribe un correo válido"));
 
+/** Checkbox "privacyAccepted" (FormData sends "on" only when checked). */
+export const privacyConsent = z.literal("on", {
+  error: "Debes autorizar el tratamiento de tus datos para continuar",
+});
+
 // Same limits as Better Auth's emailAndPassword config (min 8, max 128).
 const newPassword = z
   .string()
@@ -23,6 +28,7 @@ export const signUpSchema = z
     email,
     password: newPassword,
     confirmPassword: z.string(),
+    privacyAccepted: privacyConsent,
   })
   .refine(passwordsMatch, mismatch);
 

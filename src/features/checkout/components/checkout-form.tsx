@@ -3,6 +3,7 @@
 import { useState, useTransition, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import { PrivacyConsent } from "@/components/ui/privacy-consent";
 import { TextField } from "@/components/ui/text-field";
 import { formatCOP } from "@/lib/format";
 
@@ -177,6 +178,8 @@ export function CheckoutForm({
             />
           </div>
         </fieldset>
+
+        <PrivacyConsent error={fieldError("privacyAccepted")} />
       </div>
 
       <aside className="flex h-fit flex-col gap-3 rounded-xl border border-zinc-200 p-5 dark:border-zinc-800">

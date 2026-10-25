@@ -37,6 +37,7 @@ async function signUp(page: Page, email: string, password: string) {
   await page.getByLabel("Correo").fill(email);
   await page.getByLabel("Contraseña", { exact: true }).fill(password);
   await page.getByLabel("Confirmar contraseña").fill(password);
+  await page.getByLabel(/Autorizo el tratamiento/).check();
   await page.getByRole("button", { name: "Crear cuenta" }).click();
   await expect(page.getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
 }

@@ -182,4 +182,12 @@ dueña tenga su cuenta ([issue #15](https://github.com/Nicolas-2307/melange/issu
   copia del nombre).
 - Todas las páginas y acciones llaman `requireAdmin()`.
 
-> Este documento se amplía en cada paso (productos y configuración en 5.2 y 5.3…).
+## Legal
+
+- Páginas `/legal/privacidad` (Ley 1581 de 2012), `/legal/terminos` y `/legal/devoluciones`
+  (Ley 1480 de 2011), enlazadas desde el pie de página. Son **plantillas**: mientras haya datos
+  `[PENDIENTE]` en `src/lib/business.ts`, muestran un aviso de revisión.
+- **Autorización expresa** para tratar datos: casilla obligatoria en el registro y en el
+  checkout. Queda como prueba en `users.privacyAccepted` (con su `createdAt`) y en
+  `orders.privacyAcceptedAt`. En el registro la valida también el servidor
+  (`databaseHooks.user.create.before` de Better Auth).

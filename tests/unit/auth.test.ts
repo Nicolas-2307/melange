@@ -51,11 +51,18 @@ describe("signUpSchema", () => {
     email: "ANA@Correo.com ",
     password: "segura123",
     confirmPassword: "segura123",
+    privacyAccepted: "on",
   };
 
   it("acepta datos válidos y normaliza el correo", () => {
     const result = signUpSchema.parse(valid);
     expect(result.email).toBe("ana@correo.com");
+  });
+
+  it("exige autorizar el tratamiento de datos (Ley 1581)", () => {
+    const result = signUpSchema.safeParse({ ...valid, privacyAccepted: undefined });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.path).toEqual(["privacyAccepted"]);
   });
 
   it("rechaza contraseñas cortas o que no coinciden", () => {

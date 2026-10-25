@@ -74,6 +74,7 @@ describe("checkoutSchema", () => {
     phone: "+57 300 123 4567",
     email: "ANA@correo.com",
     deliveryDate: "2026-10-31",
+    privacyAccepted: "on",
   };
 
   it("normaliza el celular y exige zona y dirección para domicilio", () => {

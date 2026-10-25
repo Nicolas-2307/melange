@@ -54,6 +54,8 @@ async function pickFirstDate(page: Page) {
 test("pedido a domicilio: valida, calcula el total y lleva a WhatsApp", async ({ page }) => {
   await addCakeAndGoToCheckout(page);
 
+  await page.getByLabel(/Autorizo el tratamiento/).check();
+
   await page.getByRole("button", { name: "Hacer pedido" }).click();
   await expect(page.getByText("Escribe tu nombre")).toBeVisible();
   await expect(page.locator("p", { hasText: "Elige tu zona" })).toBeVisible();
@@ -67,6 +69,8 @@ test("pedido a domicilio: valida, calcula el total y lleva a WhatsApp", async ({
   await pickFirstDate(page);
   await page.getByLabel("Notas (opcional)").fill("Feliz cumpleaños");
   await expect(page.getByTestId("checkout-total")).toHaveText(/125\.000/); // 120.000 + 5.000
+
+  await page.getByLabel(/Autorizo el tratamiento/).check();
 
   await page.getByRole("button", { name: "Hacer pedido" }).click();
 
@@ -82,9 +86,11 @@ test("pedido para recoger en la sede no cobra domicilio", async ({ page }) => {
   await addCakeAndGoToCheckout(page);
   await fillContact(page, testEmail());
   await page.getByText("Recoger en la sede").click();
-  await expect(page.getByText("Parque de La Floresta")).toBeVisible();
+  await expect(page.getByRole("main").getByText("Parque de La Floresta")).toBeVisible();
   await pickFirstDate(page);
   await expect(page.getByTestId("checkout-total")).toHaveText(/120\.000/);
+
+  await page.getByLabel(/Autorizo el tratamiento/).check();
 
   await page.getByRole("button", { name: "Hacer pedido" }).click();
   await expect(page.getByRole("heading", { name: "Recogida" })).toBeVisible();

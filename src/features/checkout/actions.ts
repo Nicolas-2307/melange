@@ -105,6 +105,7 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
         deliveryAddress: data.fulfillmentType === "DELIVERY" ? data.address : null,
         deliveryDate: new Date(`${data.deliveryDate}T00:00:00Z`),
         notes: data.notes || null,
+        privacyAcceptedAt: new Date(),
         subtotal: cart.subtotal,
         shippingCost,
         total,
