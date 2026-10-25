@@ -7,6 +7,7 @@ const messages: Record<string, string> = {
   INVALID_EMAIL: "El correo no es válido.",
   EMAIL_NOT_VERIFIED: "Debes confirmar tu correo antes de continuar.",
   INVALID_TOKEN: "El enlace no es válido o ya venció. Pide uno nuevo.",
+  PRIVACY_NOT_ACCEPTED: "Debes aceptar la política de tratamiento de datos.",
 };
 
 /** Translates a Better Auth error into a Spanish message for the UI. */

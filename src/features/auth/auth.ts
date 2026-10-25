@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { APIError } from "better-auth/api";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { after } from "next/server";
@@ -71,6 +72,25 @@ export const auth = betterAuth({
   user: {
     additionalFields: {
       role: { type: "string", input: false, defaultValue: "CUSTOMER" },
+      // Express authorization to process personal data (Ley 1581 de 2012), sent by the
+      // sign-up form checkbox. Stored with the user (its createdAt dates the consent).
+      privacyAccepted: { type: "boolean", input: true, required: true },
+    },
+  },
+
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          if ((user as { privacyAccepted?: unknown }).privacyAccepted !== true) {
+            throw new APIError("BAD_REQUEST", {
+              code: "PRIVACY_NOT_ACCEPTED",
+              message: "You must accept the data processing policy.",
+            });
+          }
+          return { data: user };
+        },
+      },
     },
   },
 

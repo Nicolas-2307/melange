@@ -21,15 +21,17 @@ enum Role {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  name          String
-  email         String   @unique
-  emailVerified Boolean  @default(false)
-  image         String?
-  phone         String?
-  role          Role     @default(CUSTOMER)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  emailVerified   Boolean  @default(false)
+  image           String?
+  phone           String?
+  role            Role     @default(CUSTOMER)
+  /// Accepted the data processing policy at sign-up (Ley 1581 de 2012). createdAt dates it.
+  privacyAccepted Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   sessions Session[]
   accounts Account[]
@@ -299,14 +301,16 @@ model Order {
   customerEmail String
   customerPhone String
 
-  fulfillmentType  FulfillmentType
+  fulfillmentType   FulfillmentType
   /// Snapshot of the delivery zone name (zones can be renamed or removed later).
-  deliveryZoneName String?
+  deliveryZoneName  String?
   /// Requested delivery/pickup date (Bogotá calendar day).
-  deliveryDate     DateTime        @db.Date
-  deliveryAddress  String?
-  deliveryCity     String?
-  notes            String?
+  deliveryDate      DateTime        @db.Date
+  deliveryAddress   String?
+  deliveryCity      String?
+  notes             String?
+  /// When the customer authorized the processing of their data at checkout (Ley 1581 de 2012).
+  privacyAcceptedAt DateTime?
 
   /// Amounts in COP (integers).
   subtotal     Int

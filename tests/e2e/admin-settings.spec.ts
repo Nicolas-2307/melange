@@ -37,6 +37,7 @@ async function signUpAsAdmin(page: Page, email: string) {
   await page.getByLabel("Correo").fill(email);
   await page.getByLabel("Contraseña", { exact: true }).fill("clave-segura-123");
   await page.getByLabel("Confirmar contraseña").fill("clave-segura-123");
+  await page.getByLabel(/Autorizo el tratamiento/).check();
   await page.getByRole("button", { name: "Crear cuenta" }).click();
   await expect(page.getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
   await sql(`UPDATE users SET role = 'ADMIN' WHERE email = $1`, [email]);

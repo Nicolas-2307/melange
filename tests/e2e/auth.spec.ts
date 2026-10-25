@@ -45,6 +45,7 @@ test("registro, cierre de sesión e ingreso", async ({ page }) => {
   await page.getByLabel("Correo").fill(user.email);
   await page.getByLabel("Contraseña", { exact: true }).fill(user.password);
   await page.getByLabel("Confirmar contraseña").fill(user.password);
+  await page.getByLabel(/Autorizo el tratamiento/).check();
   await page.getByRole("button", { name: "Crear cuenta" }).click();
 
   await expect(page.getByText(`Hola, ${user.name}`)).toBeVisible();
@@ -68,6 +69,7 @@ test("un cliente que abre /admin ve la página de no encontrado", async ({ page 
   await page.getByLabel("Correo").fill(user.email);
   await page.getByLabel("Contraseña", { exact: true }).fill(user.password);
   await page.getByLabel("Confirmar contraseña").fill(user.password);
+  await page.getByLabel(/Autorizo el tratamiento/).check();
   await page.getByRole("button", { name: "Crear cuenta" }).click();
   await expect(page.getByText(`Hola, ${user.name}`)).toBeVisible();
 
