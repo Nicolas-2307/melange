@@ -18,6 +18,13 @@ describe("safeRedirectPath", () => {
     expect(safeRedirectPath("javascript:alert(1)")).toBe("/");
   });
 
+  it("bloquea trucos con caracteres de control (los navegadores los eliminan)", () => {
+    expect(safeRedirectPath("/\t/evil.com")).toBe("/");
+    expect(safeRedirectPath(decodeURIComponent("/%09/evil.com"))).toBe("/");
+    expect(safeRedirectPath(decodeURIComponent("/%0a/evil.com"))).toBe("/");
+    expect(safeRedirectPath("/\t\\evil.com")).toBe("/");
+  });
+
   it("usa el valor por defecto si no hay destino", () => {
     expect(safeRedirectPath(null)).toBe("/");
     expect(safeRedirectPath(undefined, "/cuenta")).toBe("/cuenta");

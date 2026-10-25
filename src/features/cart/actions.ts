@@ -6,7 +6,7 @@ import { z } from "zod";
 import { getSession } from "@/features/auth/session";
 import { db } from "@/lib/db";
 
-import { getOrCreateCartId, takeGuestCart } from "./cart";
+import { CartRateLimitError, getOrCreateCartId, takeGuestCart } from "./cart";
 import { clampQuantity, mergeLines, MAX_QUANTITY_PER_ITEM } from "./rules";
 
 export type CartActionResult = { ok: true } | { ok: false; error: string };
@@ -32,7 +32,15 @@ export async function addToCart(variantId: string, quantity = 1): Promise<CartAc
   });
   if (!variant) return { ok: false, error: "Este producto ya no está disponible." };
 
-  const cartId = await getOrCreateCartId();
+  let cartId: string;
+  try {
+    cartId = await getOrCreateCartId();
+  } catch (error) {
+    if (error instanceof CartRateLimitError) {
+      return { ok: false, error: "Demasiadas solicitudes. Inténtalo de nuevo en un rato." };
+    }
+    throw error;
+  }
   const existing = await db.cartItem.findUnique({
     where: { cartId_variantId: { cartId, variantId: variant.id } },
     select: { quantity: true },

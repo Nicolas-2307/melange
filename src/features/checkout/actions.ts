@@ -9,6 +9,8 @@ import { getCart, getOrCreateCartId } from "@/features/cart/cart";
 import { orderConfirmationEmail } from "@/features/orders/emails";
 import { orderUrl } from "@/features/orders/queries";
 import { db } from "@/lib/db";
+import { env } from "@/lib/env";
+import { clientIp, consumeRateLimit } from "@/lib/rate-limit";
 import { getEmailProvider } from "@/services/email";
 import { getPaymentProvider } from "@/services/payments";
 
@@ -33,6 +35,27 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
     return { ok: false, error: "Revisa los datos del formulario.", fieldErrors };
   }
   const data = parsed.data;
+
+  // Anti-spam: fake orders would fill the calendar (daily cap) and send emails to any address.
+  if (env.NODE_ENV === "production") {
+    const allowed = await consumeRateLimit(`checkout:${await clientIp()}`, 5, 10 * 60);
+    if (!allowed) {
+      return { ok: false, error: "Demasiados pedidos seguidos. Espera unos minutos." };
+    }
+  }
+  const recentPending = await db.order.count({
+    where: {
+      status: "PENDING",
+      createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) },
+      OR: [{ customerEmail: data.email }, { customerPhone: data.phone }],
+    },
+  });
+  if (recentPending >= 3) {
+    return {
+      ok: false,
+      error: "Ya tienes pedidos pendientes recientes. Escríbenos por WhatsApp para confirmarlos.",
+    };
+  }
 
   const cart = await getCart();
   if (cart.lines.length === 0) return { ok: false, error: "Tu carrito está vacío." };
