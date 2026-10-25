@@ -7,6 +7,8 @@ import { ProductImage } from "@/features/catalog/components/product-image";
 import { VariantPicker } from "@/features/catalog/components/variant-picker";
 import { productCoverImage } from "@/features/catalog/mappers";
 import { getProductBySlug } from "@/features/catalog/queries";
+import { productJsonLd, serializeJsonLd } from "@/features/catalog/seo";
+import { env } from "@/lib/env";
 
 export async function generateMetadata({
   params,
@@ -17,6 +19,7 @@ export async function generateMetadata({
   return {
     title: `${product.name} · Melange`,
     description: product.description,
+    alternates: { canonical: `/productos/${product.slug}` },
     openGraph: { title: product.name, description: product.description, images: [image.url] },
   };
 }
@@ -37,6 +40,10 @@ async function ProductDetail({ params }: Pick<PageProps<"/productos/[slug]">, "p
 
   return (
     <div className="grid gap-10 md:grid-cols-2">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(productJsonLd(product, env.SITE_URL)) }}
+      />
       <ProductImage product={product} sizes="(min-width: 768px) 50vw, 100vw" priority />
       <div className="flex flex-col gap-6">
         <nav aria-label="Ruta" className="text-sm text-zinc-500">
