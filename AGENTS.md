@@ -24,8 +24,12 @@ Better Auth · Cloudinary · Wompi + WhatsApp · Zod · Vitest + Playwright · V
 - `src/services/<tipo>` proveedores externos detrás de interfaces propias
   (`PaymentProvider`, `StorageProvider`, `EmailProvider`). **Nunca** importes el SDK de un
   proveedor fuera de su carpeta de servicio; el proveedor activo se elige por variable de entorno.
-- `src/lib` utilidades transversales (`env.ts`, `db.ts`, `format.ts`).
+- `src/app/legal` páginas legales (plantillas) · `src/app/api/auth` Better Auth.
+- `src/lib` utilidades transversales (`env.ts`, `db.ts`, `format.ts`, `rate-limit.ts`,
+  `business.ts` con los datos legales del negocio).
 - `tests/unit` (Vitest) · `tests/e2e` (Playwright) · `docs/` documentación y ADRs.
+- **`docs/progress.md`**: estado del plan, decisiones y siguiente paso. Léelo al empezar una
+  sesión y actualízalo al cerrar cada paso.
 
 ## Comandos
 
@@ -55,6 +59,30 @@ Antes de dar una tarea por terminada: `npm run lint && npm run typecheck && npm 
 - Montos siempre en enteros COP; nunca calcular precios en el cliente sin revalidar en el servidor.
 - Lecturas del catálogo en `src/features/catalog/queries.ts` (cacheadas). Toda escritura de
   productos/categorías llama `updateTag(CATALOG_TAG)`.
+- **Cache Components (Next 16):** todo lo que dependa del visitante (sesión, cookies,
+  `searchParams`) va dentro de `<Suspense>`; si usa la fecha u hora actual, llama antes
+  `connection()`. Las páginas del panel siguen el patrón página síncrona +
+  `<Suspense fallback={<AdminSkeleton />}>` + componente async.
+- **Autorización:** `requireAdmin()` en **cada** página y server action del panel (no basta el
+  layout ni `proxy.ts`); `requireUser(next)` en páginas de cliente con cuenta.
+- Después de ingresar, registrarse o salir, navegar con recarga completa
+  (`window.location.assign`), para que todo el árbol vea la nueva sesión.
+- Acciones públicas que crean registros (pedidos, carritos…) llevan límite de intentos con
+  `consumeRateLimit` (`src/lib/rate-limit.ts`, activo en producción).
+- Donde se recolecten datos personales, casilla obligatoria `PrivacyConsent` y guardar la
+  prueba de la autorización (Ley 1581 de 2012).
+- Tras cambiar `prisma/schema.prisma`: migración (`npm run db:migrate`, o `migrate diff` +
+  `db:deploy` si pide confirmación interactiva) y `npx prisma generate`.
+
+## Pruebas e2e
+
+- Correos de prueba siempre en `@e2e.melange.test`; cada archivo borra en `afterAll` **solo**
+  lo que creó (las pruebas corren en paralelo contra la rama `dev` de Neon).
+- Cada prueba usa una IP propia (`x-forwarded-for` aleatoria) por los límites de intentos.
+- Tras navegar del lado del cliente, Next mantiene oculta la página anterior: usar
+  `.filter({ visible: true })` o esperar la URL nueva antes de hacer clic.
+- No cambiar configuración global ni bloquear fechas cercanas (otras pruebas las usan); si una
+  prueba bloquea un día, que sea lejano (45 días o más).
 
 ## Datos de la propietaria
 
@@ -70,6 +98,11 @@ entregar, **actualiza `docs/datos-pendientes-propietaria.md` en el mismo PR**.
 - Commits con **Conventional Commits** (`feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`…),
   validados por commitlint.
 - Nunca hacer push directo ni force-push a `main` o `qa`. Nunca usar `--no-verify`.
+- Ramas de trabajo con nombres `feature/*`, `fix/*` o `chore/*` (no `docs/*`).
+- Los PRs se unen **solo con todos los checks en verde**: _squash_ hacia `dev` (borrando la
+  rama de trabajo) y _merge commit_ en las promociones `dev → qa → main`. La promoción a `main`
+  publica la tienda: requiere confirmación explícita del desarrollador.
+- Nunca borrar `dev`, `qa` ni `main`.
 
 ## Seguridad (obligatorio)
 
