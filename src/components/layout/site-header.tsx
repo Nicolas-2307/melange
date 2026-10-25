@@ -88,6 +88,14 @@ async function UserMenu() {
           Panel
         </Link>
       )}
+      <Link
+        href="/cuenta/pedidos"
+        className="rounded-lg px-2 py-2 hover:bg-zinc-100 sm:px-3 dark:hover:bg-zinc-800"
+      >
+        {/* "Mis pedidos" doesn't fit next to the rest of the menu on phones. */}
+        <span className="sm:hidden">Pedidos</span>
+        <span className="hidden sm:inline">Mis pedidos</span>
+      </Link>
       <SignOutButton />
     </>
   );

@@ -36,18 +36,22 @@ propietaria** (ver [datos-pendientes-propietaria.md](datos-pendientes-propietari
 | Auditoría de seguridad + correcciones                                         | ✅                         | #22 (pendientes en [#21](https://github.com/Nicolas-2307/melange/issues/21)) |
 | Recuperar contraseña                                                          | ✅                         | #22                                                                          |
 | Páginas legales (plantillas) + autorización de datos                          | ✅                         | #23                                                                          |
-| "Mis pedidos" para clientes con cuenta                                        | ⏳ Siguiente               | —                                                                            |
-| SEO básico (`sitemap.xml`, `robots.txt`, datos estructurados)                 | ⏳                         | —                                                                            |
+| "Mis pedidos" para clientes con cuenta                                        | ✅                         | #25                                                                          |
+| SEO básico (`sitemap.xml`, `robots.txt`, datos estructurados)                 | ⏳ Siguiente               | —                                                                            |
 | Mantenimiento: ESLint 10, `e2e` obligatorio en Rulesets, limpieza de carritos | ⏳                         | —                                                                            |
 | Chatbot                                                                       | ⏳ Después del lanzamiento | [#12](https://github.com/Nicolas-2307/melange/issues/12)                     |
 
 ## En qué vamos
 
-**Bloque "previo al lanzamiento".** Terminado: auditoría, recuperación de contraseña y
-páginas legales. Falta de este bloque: "Mis pedidos", SEO básico y mantenimiento.
+**Bloque "previo al lanzamiento".** Terminado: auditoría, recuperación de contraseña, páginas
+legales y "Mis pedidos". Falta de este bloque: SEO básico y mantenimiento.
 
-La promoción `dev → qa` más reciente fue la #20. Desde entonces `dev` acumula #18, #19, #1, #22
-y #23: conviene promover a `qa` al cerrar el bloque.
+"Mis pedidos" (`/cuenta/pedidos`) muestra solo los pedidos hechos con la sesión iniciada
+(`orders.userId`). A propósito **no** incluye pedidos de invitado con el mismo correo: cualquiera
+puede registrar un correo ajeno y vería direcciones y teléfonos de otra persona.
+
+La promoción `dev → qa` más reciente fue la #20. Desde entonces `dev` acumula #18, #19, #1, #22,
+#23, #24 y #25: conviene promover a `qa` al cerrar el bloque.
 
 ## Decisiones tomadas
 
@@ -94,11 +98,14 @@ chatbot, cada uno merece el suyo.
 ## Siguiente paso exacto
 
 1. Actualizar `dev` local (`git switch dev` y `git pull`) y reiniciar `npm run dev`.
-2. Crear `feature/my-orders` desde `dev` y construir **"Mis pedidos"**:
-   - ruta `/cuenta/pedidos` (protegida con `requireUser`), dentro de `<Suspense>`;
-   - lista de pedidos del usuario (`orders.userId`) con número, fecha de entrega, total y
-     estado (`ORDER_STATUS_LABEL`), enlazando a `/pedidos/<publicToken>`;
-   - enlace "Mis pedidos" en el encabezado para usuarios con sesión;
-   - pruebas: unitaria de la consulta si hay lógica, e2e (cliente con cuenta hace un pedido y
-     lo ve en "Mis pedidos"; otro cliente no lo ve).
-3. Después: SEO básico, mantenimiento y promoción `dev → qa`.
+2. Crear `feature/seo-basics` desde `dev` y construir el **SEO básico**:
+   - `src/app/sitemap.ts` con inicio, catálogo, categorías y productos activos (lecturas de
+     `src/features/catalog/queries.ts`) y URLs absolutas con `env.SITE_URL`;
+   - `src/app/robots.ts`: permitir la tienda, bloquear `/admin`, `/api`, `/cuenta`,
+     `/carrito`, `/checkout` y `/pedidos`; en previews (`VERCEL_ENV` distinto de
+     `production`) bloquear todo;
+   - datos estructurados `Product` (JSON-LD, precios en COP) en `/productos/[slug]`;
+   - `metadataBase` y descripciones por página;
+   - pruebas: e2e de `/robots.txt`, `/sitemap.xml` y del JSON-LD de un producto.
+     Antes, leer la guía de metadatos en `node_modules/next/dist/docs/`.
+3. Después: mantenimiento y promoción `dev → qa`.
