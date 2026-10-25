@@ -38,6 +38,8 @@ const serverSchema = z.object({
   // each time, so these are used when NEXT_PUBLIC_SITE_URL is not set.
   VERCEL_URL: optional(z.string()),
   VERCEL_BRANCH_URL: optional(z.string()),
+  // "production" | "preview" | "development" on Vercel; unset locally.
+  VERCEL_ENV: optional(z.string()),
 });
 
 // NEXT_PUBLIC_* values are inlined into the browser bundle: never put secrets here.
@@ -53,6 +55,11 @@ const https = (host: string | undefined) => (host ? `https://${host}` : undefine
 
 const schema = serverSchema
   .extend(clientSchema.shape)
+  // The console provider prints verification and order links to the logs: never in production.
+  .refine((vars) => !(vars.VERCEL_ENV === "production" && vars.EMAIL_PROVIDER === "console"), {
+    message: "En producción configura un proveedor de correo real (EMAIL_PROVIDER)",
+    path: ["EMAIL_PROVIDER"],
+  })
   .refine((vars) => vars.NEXT_PUBLIC_SITE_URL || vars.VERCEL_BRANCH_URL || vars.VERCEL_URL, {
     message: "Define NEXT_PUBLIC_SITE_URL (en Vercel se toma de VERCEL_BRANCH_URL)",
     path: ["NEXT_PUBLIC_SITE_URL"],

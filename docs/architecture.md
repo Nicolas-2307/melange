@@ -78,10 +78,27 @@ Reglas:
 - **`requireAdmin()` en cada página y server action del panel.** El proxy y el layout ayudan,
   pero la verificación válida es la que corre junto a los datos.
 - Un cliente que abre `/admin` ve "Página no encontrada": no se revela que el panel existe.
-- El rol `ADMIN` se asigna a cada correo de `ADMIN_EMAILS` cuando ese correo se verifica.
+- El rol `ADMIN` se asigna a cada correo de `ADMIN_EMAILS` cuando se **prueba que el buzón es
+  suyo**: al abrir el enlace de verificación o al restablecer la contraseña con el enlace del
+  correo (`admin-promotion.ts`). Como otra persona pudo registrar ese correo primero y elegir la
+  contraseña, al promover se **cierran todas las sesiones** y, si fue por verificación, se
+  **descarta la contraseña**: la dueña crea la suya con «¿Olvidaste tu contraseña?». Hay una
+  prueba e2e que reproduce ese ataque.
+- **Recuperar contraseña:** `/olvide-contrasena` → enlace por correo (vale 1 hora) →
+  `/restablecer`. La respuesta nunca revela si el correo tiene cuenta, y al cambiarla se
+  cierran todas las sesiones.
 - Puede haber varios admins. Quitar un correo de `ADMIN_EMAILS` no le quita el rol: eso se
   hace cambiando `role` a `CUSTOMER` en `npm run db:studio`.
 - El rol nunca se puede enviar desde el formulario de registro (`input: false`).
+- **Límites de intentos** (en producción): ingreso 5/min, registro 3/min, recuperar contraseña
+  y reenviar verificación 3/min por IP (Better Auth); pedidos 5 cada 10 min por IP y máximo 3
+  pendientes por correo/teléfono en una hora; carritos de invitado 20/hora por IP
+  (`src/lib/rate-limit.ts`). Los pedidos sin confirmar solo ocupan cupo diario 24 horas.
+- **Cabeceras de seguridad** (`next.config.ts`): sin iframes (`X-Frame-Options`,
+  `frame-ancestors`), `nosniff`, `Referrer-Policy` y `Permissions-Policy`. Falta una CSP de
+  scripts con nonce.
+- `EMAIL_PROVIDER=console` está prohibido en producción (`VERCEL_ENV=production`): imprimiría
+  enlaces de verificación y de pedidos en los logs.
 - **Rendimiento:** la sesión se guarda 5 minutos en una cookie firmada (`cookieCache`) y
   `getSession()` se deduplica por petición con `cache`, así que la mayoría de las páginas no
   consultan la base de datos para saber quién es el usuario. `requireAdmin()` sí lee siempre

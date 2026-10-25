@@ -6,6 +6,7 @@ const messages: Record<string, string> = {
   PASSWORD_TOO_LONG: "La contraseña es demasiado larga.",
   INVALID_EMAIL: "El correo no es válido.",
   EMAIL_NOT_VERIFIED: "Debes confirmar tu correo antes de continuar.",
+  INVALID_TOKEN: "El enlace no es válido o ya venció. Pide uno nuevo.",
 };
 
 /** Translates a Better Auth error into a Spanish message for the UI. */

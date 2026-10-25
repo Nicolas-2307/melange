@@ -55,6 +55,9 @@ export function SignInForm() {
         autoComplete="current-password"
         error={errors.password}
       />
+      <Link href="/olvide-contrasena" className="-mt-2 self-end text-sm underline">
+        ¿Olvidaste tu contraseña?
+      </Link>
       {errors.form && (
         <p role="alert" className="text-sm text-red-600">
           {errors.form}

@@ -26,6 +26,10 @@ export default defineConfig({
     port: PORT,
     timeout: 180_000,
     reuseExistingServer: false,
-    env: { NEXT_PUBLIC_SITE_URL: `http://localhost:${PORT}` },
+    env: {
+      NEXT_PUBLIC_SITE_URL: `http://localhost:${PORT}`,
+      // Fixed admin address used by tests/e2e/auth-recovery.spec.ts.
+      ADMIN_EMAILS: "owner@e2e.melange.test",
+    },
   },
 });

@@ -8,7 +8,8 @@ import { env } from "@/lib/env";
 import { getEmailProvider } from "@/services/email";
 
 import { isAdminEmail } from "./admin-email";
-import { verificationEmail } from "./emails";
+import { promoteToAdmin } from "./admin-promotion";
+import { passwordResetEmail, verificationEmail } from "./emails";
 
 export const auth = betterAuth({
   appName: "Melange",
@@ -22,22 +23,40 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
     autoSignIn: true,
+    // Password reset: link valid for 1 hour; every open session is closed afterwards.
+    resetPasswordTokenExpiresIn: 60 * 60,
+    revokeSessionsOnPasswordReset: true,
+    // Resetting through the emailed link also proves the inbox: the owner can become ADMIN
+    // this way even if someone registered her address first. The new password is hers.
+    onPasswordReset: async ({ user }) => {
+      if (isAdminEmail(user.email, env.ADMIN_EMAILS)) {
+        await promoteToAdmin(user.id, { discardPassword: false });
+      }
+    },
+    sendResetPassword: async ({ user, url }) => {
+      after(() =>
+        getEmailProvider().send(passwordResetEmail({ to: user.email, name: user.name, url })),
+      );
+    },
   },
 
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
+      const forAdmin = isAdminEmail(user.email, env.ADMIN_EMAILS);
       // Not awaited (avoids timing attacks); `after` keeps serverless functions alive until sent.
       after(() =>
-        getEmailProvider().send(verificationEmail({ to: user.email, name: user.name, url })),
+        getEmailProvider().send(
+          verificationEmail({ to: user.email, name: user.name, url, forAdmin }),
+        ),
       );
     },
-    // ADMIN is granted only after proving ownership of an ADMIN_EMAILS address: someone
-    // registering first with the owner's address can't become admin without that inbox.
+    // ADMIN requires proving the inbox of an ADMIN_EMAILS address, and the password chosen
+    // at sign-up is discarded (see admin-promotion.ts for why).
     afterEmailVerification: async (user) => {
       if (isAdminEmail(user.email, env.ADMIN_EMAILS)) {
-        await db.user.update({ where: { id: user.id }, data: { role: "ADMIN" } });
+        await promoteToAdmin(user.id, { discardPassword: true });
       }
     },
   },
@@ -61,6 +80,8 @@ export const auth = betterAuth({
     customRules: {
       "/sign-in/email": { window: 60, max: 5 },
       "/sign-up/email": { window: 60, max: 3 },
+      "/request-password-reset": { window: 60, max: 3 },
+      "/send-verification-email": { window: 60, max: 3 },
     },
   },
 

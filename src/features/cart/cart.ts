@@ -4,8 +4,15 @@ import { getSession } from "@/features/auth/session";
 import { productCoverImage } from "@/features/catalog/mappers";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
+import { clientIp, consumeRateLimit } from "@/lib/rate-limit";
 
 import { cartTotals } from "./rules";
+
+export class CartRateLimitError extends Error {
+  constructor() {
+    super("Too many guest carts from this IP");
+  }
+}
 
 /**
  * Guest carts are identified by an unguessable id in an httpOnly cookie.
@@ -65,6 +72,12 @@ export async function getOrCreateCartId(): Promise<string> {
 
   const existing = await findCartId();
   if (existing) return existing;
+
+  // Guest carts cost nothing to create: cap them per IP so a script cannot fill the database.
+  const allowed =
+    env.NODE_ENV !== "production" ||
+    (await consumeRateLimit(`cart:${await clientIp()}`, 20, 60 * 60));
+  if (!allowed) throw new CartRateLimitError();
 
   const cart = await db.cart.create({ data: {}, select: { id: true } });
   (await cookies()).set(CART_COOKIE, cart.id, {
