@@ -78,10 +78,41 @@ Reglas:
 - **`requireAdmin()` en cada página y server action del panel.** El proxy y el layout ayudan,
   pero la verificación válida es la que corre junto a los datos.
 - Un cliente que abre `/admin` ve "Página no encontrada": no se revela que el panel existe.
-- El rol `ADMIN` se asigna a cada correo de `ADMIN_EMAILS` cuando ese correo se verifica.
+- El rol `ADMIN` se activa **solo** al crear la contraseña con el enlace de «¿Olvidaste tu
+  contraseña?» para un correo de `ADMIN_EMAILS`, y solo si la cuenta **nunca tuvo contraseña**
+  ([ADR 0008](adr/0008-admin-activation-by-reset.md), `admin-promotion.ts`). Esos correos **no
+  se pueden registrar** por el formulario público. Si ya existía una cuenta con ese correo y
+  contraseña, se reemplaza por una nueva al pedir el enlace, y un enlace anterior no la activa.
+  Hay pruebas e2e del flujo y de ingresos simultáneos durante la activación.
+- De la API de Better Auth solo queda expuesto lo que usa la tienda (registro, ingreso, salida,
+  recuperar contraseña y el enlace de verificación); el resto está en `disabledPaths`.
+- `requireUser()` y `requireAdmin()` leen la sesión de la base de datos: una sesión cerrada deja
+  de servir de inmediato en «Mis pedidos» y en el panel. El encabezado y el carrito usan la
+  caché de 5 minutos de la cookie.
+- Después de ingresar solo se redirige a rutas internas (`redirect.ts` valida la ruta ya
+  normalizada: `/.//otro-sitio` se rechaza).
+- El nombre de la persona se valida también en el servidor (`personName`): aparece en correos
+  que salen de la tienda, así que no admite enlaces ni saltos de línea.
+- **Recuperar contraseña:** `/olvide-contrasena` → enlace por correo (vale 1 hora) →
+  `/restablecer`. La respuesta nunca revela si el correo tiene cuenta, y al cambiarla se
+  cierran todas las sesiones.
 - Puede haber varios admins. Quitar un correo de `ADMIN_EMAILS` no le quita el rol: eso se
   hace cambiando `role` a `CUSTOMER` en `npm run db:studio`.
 - El rol nunca se puede enviar desde el formulario de registro (`input: false`).
+- **Límites de intentos** (en producción; las direcciones IPv6 se cuentan por bloque /64):
+  ingreso 5/min, registro 3/min y recuperar contraseña 3/min por IP (Better Auth, tabla
+  `rate_limits`); pedidos 5 cada 10 min por IP y máximo 3
+  pendientes por correo/teléfono en una hora; carritos de invitado 20/hora por IP
+  (`src/lib/rate-limit.ts`). Los límites propios viven en su tabla (`rate_limit_buckets`) y
+  cuentan con una sola sentencia atómica: la limpieza de Better Auth borraba los contadores
+  cuando compartían tabla. Los pedidos sin confirmar solo ocupan cupo diario 24 horas.
+- **Fechas de entrega:** el servidor solo acepta días reales del calendario (`isRealDay`) dentro
+  de los 30 días que muestra el calendario (`BOOKING_HORIZON_DAYS`).
+- **Cabeceras de seguridad** (`next.config.ts`): sin iframes (`X-Frame-Options`,
+  `frame-ancestors`), `nosniff`, `Referrer-Policy` y `Permissions-Policy`. Falta una CSP de
+  scripts con nonce.
+- `EMAIL_PROVIDER=console` está prohibido en producción (`VERCEL_ENV=production`): imprimiría
+  enlaces de verificación y de pedidos en los logs.
 - **Rendimiento:** la sesión se guarda 5 minutos en una cookie firmada (`cookieCache`) y
   `getSession()` se deduplica por petición con `cache`, así que la mayoría de las páginas no
   consultan la base de datos para saber quién es el usuario. `requireAdmin()` sí lee siempre
@@ -165,4 +196,12 @@ dueña tenga su cuenta ([issue #15](https://github.com/Nicolas-2307/melange/issu
   copia del nombre).
 - Todas las páginas y acciones llaman `requireAdmin()`.
 
-> Este documento se amplía en cada paso (productos y configuración en 5.2 y 5.3…).
+## Legal
+
+- Páginas `/legal/privacidad` (Ley 1581 de 2012), `/legal/terminos` y `/legal/devoluciones`
+  (Ley 1480 de 2011), enlazadas desde el pie de página. Son **plantillas**: mientras haya datos
+  `[PENDIENTE]` en `src/lib/business.ts`, muestran un aviso de revisión.
+- **Autorización expresa** para tratar datos: casilla obligatoria en el registro y en el
+  checkout. Queda como prueba en `users.privacyAccepted` (con su `createdAt`) y en
+  `orders.privacyAcceptedAt`. En el registro la valida también el servidor
+  (`databaseHooks.user.create.before` de Better Auth).

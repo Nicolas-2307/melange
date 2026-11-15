@@ -4,7 +4,7 @@ import { Suspense } from "react";
 
 import { AdminSkeleton } from "@/components/layout/admin-skeleton";
 import { requireAdmin } from "@/features/auth/session";
-import { formatDeliveryDate, todayInBogota } from "@/features/checkout/availability";
+import { formatDeliveryDate, isRealDay, todayInBogota } from "@/features/checkout/availability";
 import {
   formatMonth,
   monthGrid,
@@ -18,9 +18,7 @@ import { BlockDayToggle } from "@/features/orders/components/block-day-toggle";
 import { OrdersTable } from "@/features/orders/components/orders-table";
 
 const isMonth = (value: unknown): value is string =>
-  typeof value === "string" && /^\d{4}-\d{2}$/.test(value);
-const isDay = (value: unknown): value is string =>
-  typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
+  typeof value === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
 
 export default function AdminCalendarPage(props: PageProps<"/admin/calendario">) {
   return (
@@ -37,7 +35,7 @@ async function AdminCalendarPageContent({ searchParams }: PageProps<"/admin/cale
   const params = await searchParams;
   const today = todayInBogota();
   const month = isMonth(params.mes) ? params.mes : monthOf(today);
-  const selected = isDay(params.dia) && monthOf(params.dia) === month ? params.dia : null;
+  const selected = isRealDay(params.dia) && monthOf(params.dia) === month ? params.dia : null;
 
   const { ordersByDay, blockedByDay } = await getMonthCalendar(month);
   const selectedOrders = selected ? (ordersByDay.get(selected) ?? []) : [];

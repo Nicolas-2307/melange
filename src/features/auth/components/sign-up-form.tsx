@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import { PrivacyConsent } from "@/components/ui/privacy-consent";
 import { TextField } from "@/components/ui/text-field";
 
 import { mergeGuestCart } from "@/features/cart/actions";
@@ -31,6 +32,7 @@ export function SignUpForm() {
       name,
       email,
       password,
+      privacyAccepted: true,
       callbackURL: next,
     });
     if (error) {
@@ -69,6 +71,7 @@ export function SignUpForm() {
         autoComplete="new-password"
         error={errors.confirmPassword}
       />
+      <PrivacyConsent error={errors.privacyAccepted} />
       {errors.form && (
         <p role="alert" className="text-sm text-red-600">
           {errors.form}

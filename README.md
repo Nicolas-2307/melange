@@ -109,6 +109,10 @@ Commits con [Conventional Commits](https://www.conventionalcommits.org/es/). Sin
 `dev`, `qa` ni `main`; cada PR debe pasar lint, typecheck, tests y build.
 Guía completa en [`docs/git-workflow.md`](docs/git-workflow.md) y [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
+## Estado del proyecto
+
+Pasos completados, decisiones y siguiente paso: [`docs/progress.md`](docs/progress.md).
+
 ## Datos pendientes de la propietaria
 
 Lo que la dueña debe entregar y su estado: [`docs/datos-pendientes-propietaria.md`](docs/datos-pendientes-propietaria.md).

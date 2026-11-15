@@ -51,6 +51,19 @@ Environment Variables_, marcando el ambiente.
 `VERCEL_URL` y `VERCEL_BRANCH_URL` las pone Vercel solo: la app las usa como URL del sitio y
 orígenes de confianza para el login cuando `NEXT_PUBLIC_SITE_URL` no está definida.
 
+### Activar el acceso al panel
+
+Los correos de `ADMIN_EMAILS` **no se registran** en `/registro` (la tienda responde que ya
+existe una cuenta). Cada administradora entra así:
+
+1. Abre `/olvide-contrasena`, escribe su correo y pide el enlace.
+2. Abre el enlace que le llega (con `EMAIL_PROVIDER=console` aparece en la terminal o en los
+   _Logs_ de Vercel) y crea su contraseña.
+3. Ingresa en `/ingresar`: ya ve el enlace **Panel**.
+
+Ese enlace es la única forma de activar el rol ([ADR 0008](adr/0008-admin-activation-by-reset.md)).
+Si ya existía una cuenta de clienta con ese correo, se reemplaza por una nueva al pedir el enlace.
+
 Las variables de Cloudinary ([issue #15](https://github.com/Nicolas-2307/melange/issues/15)) y
 Wompi (Paso 4.4) se añadirán cuando existan las cuentas de la dueña.
 

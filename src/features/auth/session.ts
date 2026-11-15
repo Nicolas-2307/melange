@@ -16,9 +16,21 @@ export const getSession = cache(async () => {
   return auth.api.getSession({ headers: await headers() });
 });
 
-/** Redirects to login when there is no session. */
+/**
+ * Session read from the database, skipping the 5-minute cookie cache: a session that was
+ * closed (password reset, role change) stops working at once. `cache` dedupes per request.
+ */
+const getFreshSession = cache(async () => {
+  await connection();
+  return auth.api.getSession({ headers: await headers(), query: { disableCookieCache: true } });
+});
+
+/**
+ * For pages with the customer's own data: redirects to login when there is no session.
+ * Reads the database, so a closed session cannot keep opening them from its cached cookie.
+ */
 export async function requireUser(next: string) {
-  const session = await getSession();
+  const session = await getFreshSession();
   if (!session) redirect(`/ingresar?next=${encodeURIComponent(next)}`);
   return session;
 }
@@ -29,11 +41,7 @@ export async function requireUser(next: string) {
  * applies immediately. Non-admins get a 404 so the panel's existence isn't revealed.
  */
 export const requireAdmin = cache(async () => {
-  await connection();
-  const session = await auth.api.getSession({
-    headers: await headers(),
-    query: { disableCookieCache: true },
-  });
+  const session = await getFreshSession();
   if (!session) redirect(`/ingresar?next=${encodeURIComponent("/admin")}`);
   if (session.user.role !== "ADMIN") notFound();
   return session;

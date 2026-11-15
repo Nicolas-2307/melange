@@ -14,15 +14,22 @@ de entorno** (en `.env.local` y en Vercel) o se edita en el **panel** (Paso 5).
 
 ## Contacto y negocio
 
-| Dato                                                             | Dónde va                       | Valor de ejemplo                  | Estado |
-| ---------------------------------------------------------------- | ------------------------------ | --------------------------------- | ------ |
-| Número de WhatsApp del negocio                                   | `NEXT_PUBLIC_WHATSAPP_NUMBER`  | `570000000000`                    | ⏳     |
-| Correo(s) de quien administrará el panel                         | `ADMIN_EMAILS`                 | Correo del desarrollador          | ⏳     |
-| Dirección exacta de la sede (recogidas)                          | Panel → Configuración          | "Parque de La Floresta, Medellín" | ⏳     |
-| Nombre comercial definitivo, logo y colores                      | `public/`, textos de la tienda | "Melange", sin logo               | ⏳     |
-| Datos legales (razón social, NIT o RUT)                          | Pie de página, políticas       | —                                 | ⏳     |
-| Política de privacidad y tratamiento de datos (Ley 1581 de 2012) | Página legal                   | —                                 | ⏳     |
-| Términos y condiciones, cambios y devoluciones                   | Página legal                   | —                                 | ⏳     |
+| Dato                                                                                       | Dónde va                                              | Valor de ejemplo                  | Estado |
+| ------------------------------------------------------------------------------------------ | ----------------------------------------------------- | --------------------------------- | ------ |
+| Número de WhatsApp del negocio                                                             | `NEXT_PUBLIC_WHATSAPP_NUMBER`                         | `570000000000`                    | ⏳     |
+| Correo(s) de quien administrará el panel                                                   | `ADMIN_EMAILS`                                        | Correo del desarrollador          | ⏳     |
+| Dirección exacta de la sede (recogidas)                                                    | Panel → Configuración                                 | "Parque de La Floresta, Medellín" | ⏳     |
+| Nombre comercial definitivo, logo y colores                                                | `public/`, textos de la tienda                        | "Melange", sin logo               | ⏳     |
+| Razón social, NIT o cédula, dirección exacta, correo y teléfono                            | `src/lib/business.ts` (todo lo marcado `[PENDIENTE]`) | Valores `[PENDIENTE: …]`          | ⏳     |
+| Fecha de entrada en vigencia de los textos legales                                         | `src/lib/business.ts` → `legalEffectiveDate`          | `[PENDIENTE]`                     | ⏳     |
+| Revisión de la política de tratamiento de datos (Ley 1581) y quién atiende las solicitudes | `/legal/privacidad`                                   | Plantilla                         | ⏳     |
+| Proveedores definitivos (encargados del tratamiento)                                       | `/legal/privacidad` §4                                | Genérico                          | ⏳     |
+| ¿Enviará promociones? (requiere autorización aparte)                                       | `/legal/privacidad` §3                                | No                                | ⏳     |
+| IVA o impuesto incluido en los precios                                                     | `/legal/terminos` §2                                  | `[PENDIENTE]`                     | ⏳     |
+| Franjas de entrega y qué pasa si no hay quien reciba                                       | `/legal/terminos` §4                                  | `[PENDIENTE]`                     | ⏳     |
+| Política de cancelación (plazo y reembolso)                                                | `/legal/terminos` §5 y `/legal/devoluciones` §3       | `[PENDIENTE]`                     | ⏳     |
+| Plazo para reportar productos en mal estado                                                | `/legal/devoluciones` §2                              | `[PENDIENTE]`                     | ⏳     |
+| Revisión por abogado del retracto (art. 47, Ley 2439 de 2024)                              | `/legal/devoluciones` §1                              | Plantilla                         | ⏳     |
 
 ## Catálogo y operación
 

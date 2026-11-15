@@ -45,6 +45,7 @@ test("registro, cierre de sesión e ingreso", async ({ page }) => {
   await page.getByLabel("Correo").fill(user.email);
   await page.getByLabel("Contraseña", { exact: true }).fill(user.password);
   await page.getByLabel("Confirmar contraseña").fill(user.password);
+  await page.getByLabel(/Autorizo el tratamiento/).check();
   await page.getByRole("button", { name: "Crear cuenta" }).click();
 
   await expect(page.getByText(`Hola, ${user.name}`)).toBeVisible();
@@ -68,6 +69,7 @@ test("un cliente que abre /admin ve la página de no encontrado", async ({ page 
   await page.getByLabel("Correo").fill(user.email);
   await page.getByLabel("Contraseña", { exact: true }).fill(user.password);
   await page.getByLabel("Confirmar contraseña").fill(user.password);
+  await page.getByLabel(/Autorizo el tratamiento/).check();
   await page.getByRole("button", { name: "Crear cuenta" }).click();
   await expect(page.getByText(`Hola, ${user.name}`)).toBeVisible();
 
@@ -87,4 +89,68 @@ test("muestra errores de validación y de credenciales", async ({ page }) => {
   await page.getByLabel("Contraseña").fill("incorrecta-123");
   await page.getByRole("button", { name: "Ingresar" }).click();
   await expect(page.getByText("Correo o contraseña incorrectos.")).toBeVisible();
+});
+
+test("tras ingresar, un destino manipulado no saca a la persona del sitio", async ({
+  page,
+  baseURL,
+}) => {
+  const user = newUser();
+  // Answer for the outside host locally: the test must never leave the machine.
+  await page.route(/^https?:\/\/example\.com\//, (route) =>
+    route.fulfill({ status: 200, contentType: "text/html", body: "<h1>sitio externo</h1>" }),
+  );
+  await page.request.post("/api/auth/sign-up/email", {
+    headers: { origin: new URL(baseURL!).origin },
+    data: { ...user, privacyAccepted: true },
+  });
+  await page.context().clearCookies();
+
+  // "/.//example.com" resolves to "//example.com": another site for a browser.
+  await page.goto(`/ingresar?next=${encodeURIComponent("/.//example.com/ingresar")}`);
+  await page.getByLabel("Correo").fill(user.email);
+  await page.getByLabel("Contraseña").fill(user.password);
+  await page.getByRole("button", { name: "Ingresar" }).click();
+
+  await expect(page.getByText(`Hola, ${user.name}`)).toBeVisible();
+  expect(new URL(page.url()).pathname).toBe("/");
+  expect(new URL(page.url()).hostname).toBe("localhost");
+});
+
+test("la API de cuentas solo expone lo que usa la tienda", async ({ page, baseURL }) => {
+  const user = newUser();
+  const origin = new URL(baseURL!).origin;
+  const signUp = await page.request.post("/api/auth/sign-up/email", {
+    headers: { origin },
+    data: { ...user, privacyAccepted: true },
+  });
+  expect(signUp.ok()).toBe(true);
+
+  // With a valid session, none of these exist: a stolen session cannot rename the account,
+  // change its password or keep itself alive through them.
+  for (const path of ["/update-user", "/change-password", "/change-email", "/delete-user"]) {
+    const response = await page.request.post(`/api/auth${path}`, {
+      headers: { origin },
+      data: { name: "Otro Nombre" },
+    });
+    expect(response.status(), path).toBe(404);
+  }
+  expect((await page.request.get("/api/auth/list-sessions")).status()).toBe(404);
+});
+
+test("el servidor valida el nombre aunque se llame a la API directamente", async ({
+  page,
+  baseURL,
+}) => {
+  const user = newUser();
+  const response = await page.request.post("/api/auth/sign-up/email", {
+    headers: { origin: new URL(baseURL!).origin },
+    data: {
+      ...user,
+      name: `Gana un premio en https://evil.example\n${"x".repeat(3000)}`,
+      privacyAccepted: true,
+    },
+  });
+  expect(response.status()).toBe(400);
+  expect((await response.json()).code).toBe("INVALID_NAME");
 });

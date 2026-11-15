@@ -85,6 +85,7 @@ export type AdminOrderDetail = NonNullable<Awaited<ReturnType<typeof getAdminOrd
 
 /** Orders and blocked days of one month ("YYYY-MM"), for the owner's calendar. */
 export async function getMonthCalendar(month: string) {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw new Error(`Invalid month: ${month}`);
   const [year, monthIndex] = month.split("-").map(Number) as [number, number];
   const from = new Date(Date.UTC(year, monthIndex - 1, 1));
   const to = new Date(Date.UTC(year, monthIndex, 1));

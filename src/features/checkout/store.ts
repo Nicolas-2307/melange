@@ -42,7 +42,14 @@ export async function getAvailability(today = todayInBogota()) {
       ? Promise.resolve([])
       : db.order.groupBy({
           by: ["deliveryDate"],
-          where: { deliveryDate: { gte: from }, status: { not: "CANCELLED" } },
+          where: {
+            deliveryDate: { gte: from },
+            // Unconfirmed orders hold a slot for 24 h only, so spam can't block days forever.
+            OR: [
+              { status: { notIn: ["CANCELLED", "PENDING"] } },
+              { status: "PENDING", createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+            ],
+          },
           _count: { _all: true },
         }),
   ]);

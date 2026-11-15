@@ -30,7 +30,9 @@ async function addProduct(page: Page, slug: string, variant?: string) {
   await expect(page.getByText("Agregado al carrito.")).toBeVisible();
 }
 
-const cartCount = (page: Page) => page.getByTestId("cart-count");
+// While the header refreshes after a cart change, the previous badge can still be in the
+// document for a moment (not shown): look at the one a person sees.
+const cartCount = (page: Page) => page.getByTestId("cart-count").filter({ visible: true });
 const subtotal = (page: Page) => page.getByTestId("cart-subtotal");
 
 test("agregar, cambiar cantidad y eliminar del carrito", async ({ page }) => {
@@ -77,6 +79,7 @@ test("el carrito de invitado se conserva al crear una cuenta", async ({ page }) 
   await page.getByLabel("Correo").fill(email);
   await page.getByLabel("Contraseña", { exact: true }).fill("clave-segura-123");
   await page.getByLabel("Confirmar contraseña").fill("clave-segura-123");
+  await page.getByLabel(/Autorizo el tratamiento/).check();
   await page.getByRole("button", { name: "Crear cuenta" }).click();
   await expect(page.getByText("Hola, Cliente Carrito")).toBeVisible();
 
