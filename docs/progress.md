@@ -31,16 +31,16 @@ propietaria** (ver [datos-pendientes-propietaria.md](datos-pendientes-propietari
 
 ### Trabajo previo al lanzamiento (fuera del plan original, sin datos de la dueña)
 
-| Tarea                                                                         | Estado                     | PR / issue                                                                   |
-| ----------------------------------------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------- |
-| Auditoría de seguridad + correcciones                                         | ✅                         | #22 (pendientes en [#21](https://github.com/Nicolas-2307/melange/issues/21)) |
-| Recuperar contraseña                                                          | ✅                         | #22                                                                          |
-| Páginas legales (plantillas) + autorización de datos                          | ✅                         | #23                                                                          |
-| Segunda auditoría (funcionamiento, velocidad y seguridad): correcciones       | ✅                         | #31 (seguridad), #32 (encabezado en celulares), #33 (velocidad)              |
-| "Mis pedidos" para clientes con cuenta                                        | ✅                         | #25                                                                          |
-| SEO básico (`sitemap.xml`, `robots.txt`, datos estructurados)                 | ✅                         | #26                                                                          |
-| Mantenimiento: ESLint 10, `e2e` obligatorio en Rulesets, limpieza de carritos | ⏳ Siguiente               | —                                                                            |
-| Chatbot                                                                       | ⏳ Después del lanzamiento | [#12](https://github.com/Nicolas-2307/melange/issues/12)                     |
+| Tarea                                                                   | Estado                     | PR / issue                                                                   |
+| ----------------------------------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------- |
+| Auditoría de seguridad + correcciones                                   | ✅                         | #22 (pendientes en [#21](https://github.com/Nicolas-2307/melange/issues/21)) |
+| Recuperar contraseña                                                    | ✅                         | #22                                                                          |
+| Páginas legales (plantillas) + autorización de datos                    | ✅                         | #23                                                                          |
+| Segunda auditoría (funcionamiento, velocidad y seguridad): correcciones | ✅                         | #31 (seguridad), #32 (encabezado en celulares), #33 (velocidad)              |
+| "Mis pedidos" para clientes con cuenta                                  | ✅                         | #25                                                                          |
+| SEO básico (`sitemap.xml`, `robots.txt`, datos estructurados)           | ✅                         | #26                                                                          |
+| Mantenimiento: `e2e` obligatorio en Rulesets, limpieza de carritos      | ⏳ Siguiente               | ESLint 10 hecho en #35; dependencias al día en #34                           |
+| Chatbot                                                                 | ⏳ Después del lanzamiento | [#12](https://github.com/Nicolas-2307/melange/issues/12)                     |
 
 ## En qué vamos
 
@@ -67,7 +67,8 @@ contra un build de producción local. Lo que encontró y ya está corregido:
   página; las páginas de producto y categoría se generan en el build.
 
 La promoción `dev → qa` más reciente fue la #20. Desde entonces `dev` acumula #18, #19, #1, #22,
-#23, #24, #25, #26 y las correcciones de la auditoría (#31 a #33).
+#23, #24, #25, #26, las correcciones de la auditoría (#31 a #33) y las dependencias (#34, #35;
+Next.js 16.4.5 trae correcciones de seguridad).
 
 ## Decisiones tomadas
 
@@ -99,7 +100,6 @@ chatbot, cada uno merece el suyo.
   nonce, captcha (Turnstile) en checkout y registro, limpieza de carritos de invitado,
   enumeración de cuentas en el registro, carrera de cupo diario, reglas `deny` de
   `.claude/settings.json` (decisión del desarrollador).
-- **ESLint 9 obsoleto:** pasar a ESLint 10 revisando compatibilidad con `eslint-config-next`.
 - **Check `e2e`** aún no es obligatorio en los Rulesets de `dev`, `qa` y `main`.
 - **Producción sin correo real:** se necesita un `EmailProvider` real (p. ej. Resend) antes del
   lanzamiento; con `console` la app no arranca en producción (a propósito).
