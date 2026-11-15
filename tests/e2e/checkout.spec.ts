@@ -79,7 +79,7 @@ test("pedido a domicilio: valida, calcula el total y lleva a WhatsApp", async ({
   await expect(page.getByTestId("order-total")).toHaveText(/125\.000/);
   const whatsapp = page.getByRole("link", { name: "Enviar pedido por WhatsApp" });
   await expect(whatsapp).toHaveAttribute("href", /^https:\/\/wa\.me\/\d+\?text=/);
-  await expect(page.getByTestId("cart-count")).toHaveText("0");
+  await expect(page.getByTestId("cart-count").filter({ visible: true })).toHaveText("0");
 });
 
 test("pedido para recoger en la sede no cobra domicilio", async ({ page }) => {
