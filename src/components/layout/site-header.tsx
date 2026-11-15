@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { AccountMenu } from "@/components/layout/account-menu";
 import { SignOutButton } from "@/features/auth/components/sign-out-button";
 import { getSession } from "@/features/auth/session";
-import { getCart } from "@/features/cart/cart";
+import { getCartItemCount } from "@/features/cart/cart";
 
 export function SiteHeader() {
   return (
@@ -28,8 +28,7 @@ export function SiteHeader() {
 }
 
 async function CartLinkWithCount() {
-  const { itemCount } = await getCart();
-  return <CartLink count={itemCount} />;
+  return <CartLink count={await getCartItemCount()} />;
 }
 
 /** Without `count` (while the cart loads) the badge is hidden. */

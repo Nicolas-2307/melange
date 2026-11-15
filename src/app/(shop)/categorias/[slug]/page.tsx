@@ -6,6 +6,14 @@ import { CategoryNav } from "@/features/catalog/components/category-nav";
 import { ProductGrid } from "@/features/catalog/components/product-card";
 import { getCategories, getCategory, getProducts } from "@/features/catalog/queries";
 
+/** Builds every category page ahead of time (see the product page for the reasons). */
+export async function generateStaticParams() {
+  const categories = await getCategories();
+  // Cache Components needs at least one sample: an empty catalog must still build.
+  if (categories.length === 0) return [{ slug: "sin-categorias" }];
+  return categories.map(({ slug }) => ({ slug }));
+}
+
 export async function generateMetadata({
   params,
 }: PageProps<"/categorias/[slug]">): Promise<Metadata> {
