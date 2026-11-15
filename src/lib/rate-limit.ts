@@ -51,8 +51,30 @@ export async function consumeRateLimit(key: string, max: number, windowSeconds: 
   return count <= max;
 }
 
-/** Client IP as reported by Vercel's proxy (first x-forwarded-for entry). */
+/**
+ * What a limit counts for one client address. An IPv6 customer controls a whole /64 block
+ * (2^64 addresses) and can change address on every request, so the block is counted, not
+ * each address. IPv4 addresses, and IPv4 written inside IPv6, are counted as they are.
+ */
+export function rateLimitClient(ip: string): string {
+  const address = ip.trim().toLowerCase();
+  if (!address.includes(":")) return address;
+
+  const [head = "", tail] = address.split("::");
+  const headGroups = head ? head.split(":") : [];
+  const tailGroups = tail ? tail.split(":") : [];
+  const last = tailGroups.at(-1) ?? headGroups.at(-1) ?? "";
+  if (last.includes(".")) return last; // "::ffff:203.0.113.7"
+
+  const zeros = tail === undefined ? 0 : Math.max(0, 8 - headGroups.length - tailGroups.length);
+  const groups = [...headGroups, ...Array<string>(zeros).fill("0"), ...tailGroups];
+  const block = groups.slice(0, 4).map((group) => group.replace(/^0+(?=.)/, ""));
+  return `${block.join(":")}::/64`;
+}
+
+/** Client as reported by Vercel's proxy (first x-forwarded-for entry), ready to use as a key. */
 export async function clientIp(): Promise<string> {
   const list = await headers();
-  return list.get("x-forwarded-for")?.split(",")[0]?.trim() || list.get("x-real-ip") || "unknown";
+  const ip = list.get("x-forwarded-for")?.split(",")[0]?.trim() || list.get("x-real-ip");
+  return ip ? rateLimitClient(ip) : "unknown";
 }

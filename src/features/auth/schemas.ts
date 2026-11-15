@@ -5,14 +5,15 @@ const email = z.string().trim().toLowerCase().pipe(z.email("Escribe un correo v�
 /**
  * A person's name. It is printed in emails sent from the store to an address nobody has
  * verified yet, so it must not be able to carry a link or extra lines: letters, digits,
- * spaces and basic punctuation only, and no dot glued to the next word ("evil.com").
+ * spaces and basic punctuation only ("Ana & Luis (oficina)" is fine), and no dot glued to the
+ * next word ("evil.com").
  */
 export const personName = z
   .string()
   .trim()
   .min(2, "Escribe tu nombre")
   .max(80, "Máximo 80 caracteres")
-  .regex(/^(?!.*\.\S)[\p{L}\p{M}\d .,'’-]+$/u, "Usa solo letras, números y espacios");
+  .regex(/^(?!.*\.\S)[\p{L}\p{M}\d .,'’&()-]+$/u, "Usa solo letras, números y espacios");
 
 /** Checkbox "privacyAccepted" (FormData sends "on" only when checked). */
 export const privacyConsent = z.literal("on", {

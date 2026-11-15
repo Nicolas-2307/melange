@@ -23,7 +23,7 @@ async function sql<T extends Record<string, unknown>>(query: string, params: unk
 const run = Date.now();
 const customerEmail = `recupera-${run}@${TEST_DOMAIN}`;
 // Accounts that start with another address and are then renamed to the owner's (see below).
-const impostorEmails = [`impostor-a-${run}@${TEST_DOMAIN}`, `impostor-b-${run}@${TEST_DOMAIN}`];
+const impostorEmails = ["a", "b", "c"].map((id) => `impostor-${id}-${run}@${TEST_DOMAIN}`);
 
 const octet = () => Math.floor(Math.random() * 254) + 1;
 const randomIp = () => `10.${octet()}.${octet()}.${octet()}`;
@@ -80,11 +80,8 @@ async function resetPassword(page: Page, email: string, newPassword: string) {
   const token = await latestResetToken(email);
   expect(token).toBeTruthy();
 
-  // Same URL as in the email: Better Auth validates the token and redirects to /restablecer.
-  await page.goto(
-    `/api/auth/reset-password/${token}?callbackURL=${encodeURIComponent("/restablecer")}`,
-  );
-  await expect(page).toHaveURL(/\/restablecer\?token=/);
+  // Same URL as in the email.
+  await page.goto(`/restablecer?token=${token}`);
   await page.getByLabel("Contraseña nueva").fill(newPassword);
   await page.getByLabel("Confirmar contraseña").fill(newPassword);
   await page.getByRole("button", { name: "Guardar contraseña" }).click();
@@ -116,9 +113,63 @@ test("un cliente recupera su contraseña con el enlace del correo", async ({ pag
 test("el correo de la dueña no se puede registrar por el formulario público", async ({ page }) => {
   await signUp(page, ADMIN_EMAIL, "clave-del-atacante");
 
-  // Same answer as for any address that already has an account, and nothing is created.
+  // Same answer as for any address that already has an account. What exists is an account
+  // without credentials or sessions, waiting for the owner's link: the password typed here
+  // was never stored.
   await expect(page.getByText("Ya existe una cuenta con ese correo.")).toBeVisible();
-  expect(await sql(`SELECT 1 FROM users WHERE email = $1`, [ADMIN_EMAIL])).toHaveLength(0);
+  const [account] = await sql<{ role: string; accounts: number; sessions: number }>(
+    `SELECT u.role,
+            (SELECT count(*)::int FROM accounts a WHERE a."userId" = u.id) AS accounts,
+            (SELECT count(*)::int FROM sessions s WHERE s."userId" = u.id) AS sessions
+     FROM users u WHERE u.email = $1`,
+    [ADMIN_EMAIL],
+  );
+  expect(account).toEqual({ role: "CUSTOMER", accounts: 0, sessions: 0 });
+  await signIn(page, ADMIN_EMAIL, "clave-del-atacante");
+  await expect(page.getByText("Correo o contraseña incorrectos.")).toBeVisible();
+});
+
+test("un enlace pedido antes de que el correo administrara la tienda no activa el panel", async ({
+  page,
+  baseURL,
+}) => {
+  // The account already had a password, and a reset link issued back then is still valid.
+  await registerThenRenameToOwner(page, impostorEmails[2]!, "clave-del-atacante");
+  const [{ id } = { id: "" }] = await sql<{ id: string }>(`SELECT id FROM users WHERE email = $1`, [
+    ADMIN_EMAIL,
+  ]);
+  const oldToken = `enlace-viejo-${run}`;
+  await sql(
+    `INSERT INTO verifications (id, identifier, value, "expiresAt", "createdAt", "updatedAt")
+     VALUES ($1, $2, $3, now() + interval '1 hour', now(), now())`,
+    [`e2e-${run}`, `reset-password:${oldToken}`, id],
+  );
+
+  const response = await page.request.post("/api/auth/reset-password", {
+    headers: { origin: new URL(baseURL!).origin },
+    data: { newPassword: "clave-de-quien-sea", token: oldToken },
+  });
+  expect(response.status()).toBe(400);
+  expect((await response.json()).code).toBe("INVALID_TOKEN");
+  const [user] = await sql<{ role: string }>(`SELECT role FROM users WHERE email = $1`, [
+    ADMIN_EMAIL,
+  ]);
+  expect(user?.role).toBe("CUSTOMER");
+
+  // The page tells her to ask for a new link, and that one does work.
+  await page.context().clearCookies();
+  await page.goto(`/restablecer?token=${oldToken}`);
+  await page.getByLabel("Contraseña nueva").fill("clave-de-la-duena");
+  await page.getByLabel("Confirmar contraseña").fill("clave-de-la-duena");
+  await page.getByRole("button", { name: "Guardar contraseña" }).click();
+  await expect(page.getByText("El enlace no es válido o ya venció. Pide uno nuevo.")).toBeVisible();
+
+  await resetPassword(page, ADMIN_EMAIL, "clave-de-la-duena");
+  await signIn(page, ADMIN_EMAIL, "clave-de-la-duena");
+  await expect(page.getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
+  await page.goto("/admin");
+  await expect(page.getByRole("navigation", { name: "Panel" })).toBeVisible();
+  await sql(`DELETE FROM verifications WHERE id = $1`, [`e2e-${run}`]);
 });
 
 test("la dueña activa el panel creando su contraseña con el enlace del correo", async ({

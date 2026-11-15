@@ -86,9 +86,14 @@ describe("signUpSchema", () => {
 
 describe("personName", () => {
   it("acepta nombres reales, con tildes, apóstrofos y abreviaturas", () => {
-    for (const name of ["Ana", "María José O'Neill-Pérez", "Sr. Juan Pablo II", "Nuñez, Iván"]) {
-      expect(personName.safeParse(name).success).toBe(true);
-    }
+    const good = [
+      "Ana",
+      "María José O'Neill-Pérez",
+      "Sr. Juan Pablo II",
+      "Nuñez, Iván",
+      "Ana & Luis (oficina 301)",
+    ];
+    for (const name of good) expect(personName.safeParse(name).success).toBe(true);
     expect(personName.parse("  Ana  ")).toBe("Ana");
   });
 

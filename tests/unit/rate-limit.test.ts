@@ -25,7 +25,7 @@ const bucket = {
 vi.mock("@/lib/db", () => ({ db: { rateLimitBucket: bucket } }));
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 
-const { consumeRateLimit, rateLimitWindow } = await import("@/lib/rate-limit");
+const { consumeRateLimit, rateLimitClient, rateLimitWindow } = await import("@/lib/rate-limit");
 
 beforeEach(() => {
   rows.clear();
@@ -42,8 +42,26 @@ describe("rateLimitWindow", () => {
   });
 });
 
+describe("rateLimitClient", () => {
+  it("deja las direcciones IPv4 como están", () => {
+    expect(rateLimitClient(" 203.0.113.7 ")).toBe("203.0.113.7");
+    expect(rateLimitClient("::ffff:203.0.113.7")).toBe("203.0.113.7");
+  });
+
+  it("agrupa las direcciones IPv6 del mismo bloque /64", () => {
+    const block = "2800:e2:1234:ab::/64";
+    expect(rateLimitClient("2800:e2:1234:ab:1:2:3:4")).toBe(block);
+    expect(rateLimitClient("2800:00E2:1234:00ab:ffff:ffff:ffff:ffff")).toBe(block);
+    expect(rateLimitClient("2800:e2:1234:ab::9")).toBe(block);
+    expect(rateLimitClient("2800:e2:1234:ac::9")).not.toBe(block);
+    expect(rateLimitClient("::1")).toBe("0:0:0:0::/64");
+  });
+});
+
+// Real concurrency is the database's job (one INSERT … ON CONFLICT … RETURNING per request);
+// here the table is a stand-in, so these check the counting rules only.
 describe("consumeRateLimit", () => {
-  it("deja pasar hasta el máximo y bloquea el resto, aunque lleguen a la vez", async () => {
+  it("deja pasar hasta el máximo y bloquea el resto", async () => {
     const results = await Promise.all(
       Array.from({ length: 12 }, () => consumeRateLimit("checkout:1.2.3.4", 5, 600)),
     );

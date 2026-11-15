@@ -3,54 +3,50 @@ import { db } from "@/lib/db";
 /**
  * ADMIN access for the addresses in ADMIN_EMAILS (see docs/adr/0008).
  *
- * The rule that keeps the panel safe: **nobody but the inbox owner may ever hold a password
- * or a session on an account that can become ADMIN.** Closing sessions at promotion time is
- * not enough, because a sign-in already in flight finishes after the cleanup and lands on
- * an account that is ADMIN by then.
+ * The rule that keeps the panel safe: **an account only becomes ADMIN if it has never had a
+ * password**, and it gets its first one from the emailed reset link in that same step.
+ * Cleaning up at promotion time (closing sessions, discarding a password someone else chose)
+ * is not enough: a sign-in already in flight finishes after the cleanup and lands on an
+ * account that is ADMIN by then.
  *
  * So these addresses cannot register through the public form. Their only way in is
- * "¿Olvidaste tu contraseña?": the emailed link proves the inbox, sets the password and
- * activates the role.
+ * "¿Olvidaste tu contraseña?": the link proves the inbox, activates the role and sets the
+ * password.
  */
 
 /** Shown in the header until there is a profile page; the owner did not type it. */
 const ADMIN_DISPLAY_NAME = "Administración";
 
 /**
- * Runs before a reset link is issued for an ADMIN_EMAILS address: guarantees the account
- * exists and carries no credentials chosen by someone else.
+ * Makes sure an ADMIN_EMAILS address has an account without credentials chosen by someone
+ * else. Runs before a reset link is issued and before a sign-up attempt is answered.
  *
- * An account that is not ADMIN yet but already has a password was registered before the
- * address was listed in ADMIN_EMAILS, by the owner or by an impostor (we cannot tell). It is
- * replaced by a fresh row with a new id: sign-ins or password changes still in flight keep
- * pointing at the old id and fail, instead of landing on the future admin.
+ * An account that is not ADMIN but already has a password was registered before the address
+ * was listed in ADMIN_EMAILS, by the owner or by an impostor (we cannot tell). It is replaced
+ * by a fresh row with a new id: sign-ins still in flight keep pointing at the old id and fail.
  */
 export async function prepareAdminAccount(email: string) {
   const normalized = email.trim().toLowerCase();
-  const fresh = {
-    email: normalized,
-    name: ADMIN_DISPLAY_NAME,
-    emailVerified: false,
-    privacyAccepted: false,
-  };
-
   try {
     await db.$transaction(async (tx) => {
+      // The database re-checks both conditions when deleting, so an account that was just
+      // activated is never removed. Cascades to accounts, sessions and cart; orders stay.
+      await tx.user.deleteMany({
+        where: { email: normalized, role: { not: "ADMIN" }, accounts: { some: {} } },
+      });
       const existing = await tx.user.findUnique({
         where: { email: normalized },
-        select: { id: true, role: true, _count: { select: { accounts: true } } },
+        select: { id: true },
       });
-      if (!existing) {
-        await tx.user.create({ data: fresh });
-        return;
-      }
-      // Already active, or already clean and waiting for the owner's link: leave it alone
-      // (replacing it again would invalidate the link she may be about to open).
-      if (existing.role === "ADMIN" || existing._count.accounts === 0) return;
-
-      // Cascades to its accounts, sessions and cart; its orders stay, without an owner.
-      await tx.user.delete({ where: { id: existing.id } });
-      await tx.user.create({ data: fresh });
+      if (existing) return;
+      await tx.user.create({
+        data: {
+          email: normalized,
+          name: ADMIN_DISPLAY_NAME,
+          emailVerified: false,
+          privacyAccepted: false,
+        },
+      });
     });
   } catch (error) {
     // Two requests at once: the other one already created the row.
@@ -59,13 +55,40 @@ export async function prepareAdminAccount(email: string) {
 }
 
 /**
- * Grants ADMIN after a password reset completed with the emailed link. By now the only
- * password on the account is the one just chosen through that link; closing every session
- * again costs nothing (Better Auth already did it for the reset).
+ * Runs right before a password reset is carried out, and is the only place that grants
+ * ADMIN. Looks at the account the reset link belongs to:
+ *
+ * - ADMIN_EMAILS address that has never had credentials: it becomes ADMIN now, and the
+ *   password that this same request sets is the first one it has.
+ * - ADMIN_EMAILS address that is not ADMIN and already has credentials: the link was issued
+ *   before the address was listed (or before this rule existed). Returns "reject": the reset
+ *   must not go through; a new link replaces the account first (prepareAdminAccount).
+ * - Anything else (customers, existing admins, unknown or expired links): untouched.
  */
-export async function promoteToAdmin(userId: string) {
-  await db.$transaction([
-    db.user.update({ where: { id: userId }, data: { role: "ADMIN", emailVerified: true } }),
-    db.session.deleteMany({ where: { userId } }),
-  ]);
+export async function activateAdminOnReset(
+  token: string,
+  isAdminAddress: (email: string) => boolean,
+): Promise<"proceed" | "reject"> {
+  const verification = await db.verification.findFirst({
+    where: { identifier: `reset-password:${token}` },
+    select: { value: true, expiresAt: true },
+  });
+  // Unknown or expired link: Better Auth answers that itself.
+  if (!verification || verification.expiresAt < new Date()) return "proceed";
+
+  const user = await db.user.findUnique({
+    where: { id: verification.value },
+    select: { id: true, email: true, role: true, _count: { select: { accounts: true } } },
+  });
+  if (!user || !isAdminAddress(user.email) || user.role === "ADMIN") return "proceed";
+  if (user._count.accounts > 0) return "reject";
+
+  // Conditional on still having no credentials, in case two requests race.
+  const { count } = await db.user.updateMany({
+    where: { id: user.id, accounts: { none: {} } },
+    data: { role: "ADMIN", emailVerified: true },
+  });
+  if (count === 0) return "reject";
+  await db.session.deleteMany({ where: { userId: user.id } });
+  return "proceed";
 }
