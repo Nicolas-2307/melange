@@ -1,6 +1,7 @@
 # ADR 0006 — Promoción segura a ADMIN por correo
 
-- **Estado:** Aceptado (corrige el diseño del Paso 3)
+- **Estado:** Reemplazado por el [ADR 0008](0008-admin-activation-by-reset.md): cerrar sesiones
+  al promover dejaba una ventana de carrera
 - **Fecha:** 2026-10-25
 
 ## Contexto

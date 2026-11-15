@@ -18,7 +18,8 @@ const serverSchema = z.object({
 
   // Signs session cookies and tokens. At least 32 random characters.
   BETTER_AUTH_SECRET: z.string().min(32, "Debe tener al menos 32 caracteres aleatorios"),
-  // Comma-separated list. Each account becomes ADMIN once its email is verified.
+  // Comma-separated list. Each address activates its ADMIN access by setting a password
+  // through the emailed reset link (docs/adr/0008); they cannot register publicly.
   ADMIN_EMAILS: optional(z.string())
     .transform((value) =>
       (value ?? "")

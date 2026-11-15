@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-import { privacyConsent } from "@/features/auth/schemas";
+import { personName, privacyConsent } from "@/features/auth/schemas";
+
+import { isRealDay } from "./availability";
 
 /** Colombian mobile number: 10 digits starting with 3. Spaces, dashes and +57 are accepted. */
 const phone = z
@@ -11,10 +13,10 @@ const phone = z
   );
 
 const base = {
-  name: z.string().trim().min(2, "Escribe tu nombre").max(80, "Máximo 80 caracteres"),
+  name: personName,
   phone,
   email: z.string().trim().toLowerCase().pipe(z.email("Escribe un correo válido")),
-  deliveryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Elige una fecha"),
+  deliveryDate: z.string().refine(isRealDay, "Elige una fecha"),
   notes: z.string().trim().max(500, "Máximo 500 caracteres").optional(),
   privacyAccepted: privacyConsent,
 };

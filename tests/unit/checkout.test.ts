@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   addDays,
   availableDates,
+  BOOKING_HORIZON_DAYS,
   formatDeliveryDate,
   isDateAvailable,
+  isRealDay,
   todayInBogota,
   type AvailabilityRules,
 } from "@/features/checkout/availability";
@@ -48,6 +50,43 @@ describe("isDateAvailable", () => {
 
   it("rechaza formatos inválidos", () => {
     expect(isDateAvailable("30/10/2026", MONDAY, rules)).toBe(false);
+  });
+});
+
+describe("isRealDay", () => {
+  it("acepta días que existen en el calendario", () => {
+    expect(isRealDay("2026-10-31")).toBe(true);
+    expect(isRealDay("2028-02-29")).toBe(true); // leap year
+  });
+
+  it("rechaza días imposibles, que JavaScript convertiría en otra fecha", () => {
+    for (const day of ["2026-11-31", "2027-02-30", "2027-02-29", "2026-13-01", "2026-11-99"]) {
+      expect(isRealDay(day)).toBe(false);
+    }
+    expect(isRealDay("31/10/2026")).toBe(false);
+    expect(isRealDay(undefined)).toBe(false);
+  });
+});
+
+describe("isDateAvailable: límites del servidor", () => {
+  const everyDay: AvailabilityRules = {
+    ...rules,
+    openWeekdays: [0, 1, 2, 3, 4, 5, 6],
+    blockedDates: ["2026-11-01"],
+    maxOrdersPerDay: null,
+  };
+
+  it("un día imposible no esquiva un día bloqueado", () => {
+    // "2026-10-32" would be stored as November 1st, which is blocked.
+    expect(isDateAvailable("2026-10-32", MONDAY, everyDay)).toBe(false);
+    expect(isDateAvailable("2026-11-01", MONDAY, everyDay)).toBe(false);
+  });
+
+  it("no acepta fechas más allá del horizonte que muestra el calendario", () => {
+    const last = addDays(MONDAY, BOOKING_HORIZON_DAYS);
+    expect(isDateAvailable(last, MONDAY, everyDay)).toBe(true);
+    expect(isDateAvailable(addDays(last, 1), MONDAY, everyDay)).toBe(false);
+    expect(isDateAvailable("9999-12-31", MONDAY, everyDay)).toBe(false);
   });
 });
 
