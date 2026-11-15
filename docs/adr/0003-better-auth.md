@@ -19,7 +19,8 @@ Usar **Better Auth** con:
 - Adaptador Prisma y tablas `sessions`, `accounts`, `verifications`, `rate_limits`.
 - Límite de intentos guardado en la base de datos (funciona con varias instancias serverless):
   5 ingresos y 3 registros por minuto por IP en producción.
-- Rol `ADMIN` asignado a los correos de `ADMIN_EMAILS` (lista) **solo después de verificar el correo**, para que nadie
+- (Actualizado por el [ADR 0008](0008-admin-activation-by-reset.md): hoy el rol se activa al crear la contraseña con
+  el enlace de recuperación.) Rol `ADMIN` asignado a los correos de `ADMIN_EMAILS` (lista) **solo después de verificar el correo**, para que nadie
   pueda apropiarse del panel registrándose primero con el correo del dueño.
 
 ## Consecuencias

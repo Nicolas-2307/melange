@@ -3,7 +3,8 @@ import { describe, expect, it } from "vitest";
 import { isAdminEmail } from "@/features/auth/admin-email";
 import { authErrorMessage } from "@/features/auth/errors";
 import { safeRedirectPath } from "@/features/auth/redirect";
-import { signInSchema, signUpSchema } from "@/features/auth/schemas";
+import { passwordResetEmail } from "@/features/auth/emails";
+import { personName, signInSchema, signUpSchema } from "@/features/auth/schemas";
 
 describe("safeRedirectPath", () => {
   it("permite rutas internas", () => {
@@ -23,6 +24,14 @@ describe("safeRedirectPath", () => {
     expect(safeRedirectPath(decodeURIComponent("/%09/evil.com"))).toBe("/");
     expect(safeRedirectPath(decodeURIComponent("/%0a/evil.com"))).toBe("/");
     expect(safeRedirectPath("/\t\\evil.com")).toBe("/");
+  });
+
+  it("bloquea rutas que al normalizarse apuntan a otro sitio", () => {
+    // "/.//evil.com" resolves to "//evil.com", which a browser reads as another domain.
+    for (const next of ["/.//evil.com", "/..//evil.com", "/%2e//evil.com", "/a/..//evil.com/x"]) {
+      expect(safeRedirectPath(next)).toBe("/");
+    }
+    expect(safeRedirectPath("/a/../carrito")).toBe("/carrito");
   });
 
   it("usa el valor por defecto si no hay destino", () => {
@@ -72,6 +81,37 @@ describe("signUpSchema", () => {
     const mismatch = signUpSchema.safeParse({ ...valid, confirmPassword: "otra1234" });
     expect(mismatch.success).toBe(false);
     expect(mismatch.error?.issues[0]?.path).toEqual(["confirmPassword"]);
+  });
+});
+
+describe("personName", () => {
+  it("acepta nombres reales, con tildes, apóstrofos y abreviaturas", () => {
+    for (const name of ["Ana", "María José O'Neill-Pérez", "Sr. Juan Pablo II", "Nuñez, Iván"]) {
+      expect(personName.safeParse(name).success).toBe(true);
+    }
+    expect(personName.parse("  Ana  ")).toBe("Ana");
+  });
+
+  it("rechaza enlaces, saltos de línea y textos demasiado largos", () => {
+    const bad = [
+      "A",
+      "Gana un premio en https://evil.example",
+      "Visita evil.example ya",
+      "Ana\nHaz clic aquí",
+      "ana@correo.com",
+      "<b>Ana</b>",
+      "x".repeat(81),
+    ];
+    for (const name of bad) expect(personName.safeParse(name).success).toBe(false);
+  });
+});
+
+describe("passwordResetEmail", () => {
+  const base = { to: "a@b.co", name: "Ana", url: "https://melange.test/reset" };
+
+  it("solo menciona el panel cuando el enlace activa a una administradora", () => {
+    expect(passwordResetEmail(base).text).not.toMatch(/panel/);
+    expect(passwordResetEmail({ ...base, activatesAdmin: true }).text).toMatch(/acceso al panel/);
   });
 });
 

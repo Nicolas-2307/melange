@@ -6,7 +6,7 @@ import { z } from "zod";
 import { getSession } from "@/features/auth/session";
 import { db } from "@/lib/db";
 
-import { CartRateLimitError, getOrCreateCartId, takeGuestCart } from "./cart";
+import { CartRateLimitError, findCartId, getOrCreateCartId, takeGuestCart } from "./cart";
 import { clampQuantity, mergeLines, MAX_QUANTITY_PER_ITEM } from "./rules";
 
 export type CartActionResult = { ok: true } | { ok: false; error: string };
@@ -65,7 +65,9 @@ export async function updateCartItem(itemId: string, quantity: number): Promise<
   });
   if (!parsed.success) return { ok: false, error: "Cantidad no válida." };
 
-  const cartId = await getOrCreateCartId();
+  // Changing a line never needs a new cart: without one there is nothing to change.
+  const cartId = await findCartId();
+  if (!cartId) return { ok: true };
   // Scoped by cartId: a visitor can only touch lines of their own cart.
   await db.cartItem.updateMany({
     where: { id: parsed.data.itemId, cartId },
@@ -80,7 +82,8 @@ export async function removeCartItem(itemId: string): Promise<CartActionResult> 
   const parsed = idSchema.safeParse(itemId);
   if (!parsed.success) return { ok: false, error: "Datos no válidos." };
 
-  const cartId = await getOrCreateCartId();
+  const cartId = await findCartId();
+  if (!cartId) return { ok: true };
   await db.cartItem.deleteMany({ where: { id: parsed.data, cartId } });
 
   refresh();

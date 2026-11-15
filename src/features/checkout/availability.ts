@@ -16,6 +16,20 @@ export type AvailabilityRules = {
   ordersPerDay: Record<string, number>;
 };
 
+/** How far ahead customers can book: the calendar shows these days and the server enforces it. */
+export const BOOKING_HORIZON_DAYS = 30;
+
+/**
+ * True for a real calendar day written as "YYYY-MM-DD". JavaScript quietly turns impossible
+ * days into later ones ("2027-04-31" becomes May 1st), which would skip blocked days and the
+ * daily limit, so the text must survive a round trip unchanged.
+ */
+export function isRealDay(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
 /** Today's date in Bogotá, "YYYY-MM-DD" (en-CA formats as ISO). */
 export function todayInBogota(now = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE }).format(now);
@@ -32,8 +46,9 @@ function weekday(day: string): number {
 }
 
 export function isDateAvailable(day: string, today: string, rules: AvailabilityRules): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return false;
+  if (!isRealDay(day)) return false;
   if (day < addDays(today, rules.minLeadDays)) return false;
+  if (day > addDays(today, BOOKING_HORIZON_DAYS)) return false;
   if (!rules.openWeekdays.includes(weekday(day))) return false;
   if (rules.blockedDates.includes(day)) return false;
   if (rules.maxOrdersPerDay !== null && (rules.ordersPerDay[day] ?? 0) >= rules.maxOrdersPerDay) {
@@ -46,7 +61,7 @@ export function isDateAvailable(day: string, today: string, rules: AvailabilityR
 export function availableDates(
   today: string,
   rules: AvailabilityRules,
-  horizonDays = 30,
+  horizonDays = BOOKING_HORIZON_DAYS,
 ): string[] {
   const days: string[] = [];
   for (let offset = 0; offset <= horizonDays; offset++) {

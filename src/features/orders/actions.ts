@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 
 import { requireAdmin } from "@/features/auth/session";
+import { isRealDay } from "@/features/checkout/availability";
 import { db } from "@/lib/db";
 
 import { canTransition } from "./status";
@@ -69,7 +70,7 @@ export async function markPaymentReceived(orderId: string): Promise<AdminActionR
   return { ok: true };
 }
 
-const daySchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const daySchema = z.string().refine(isRealDay);
 
 /** Blocks or unblocks a delivery date. Takes effect immediately in the customer's calendar. */
 export async function setDateBlocked(

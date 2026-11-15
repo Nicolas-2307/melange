@@ -36,6 +36,7 @@ propietaria** (ver [datos-pendientes-propietaria.md](datos-pendientes-propietari
 | Auditoría de seguridad + correcciones                                         | ✅                         | #22 (pendientes en [#21](https://github.com/Nicolas-2307/melange/issues/21)) |
 | Recuperar contraseña                                                          | ✅                         | #22                                                                          |
 | Páginas legales (plantillas) + autorización de datos                          | ✅                         | #23                                                                          |
+| Segunda auditoría (funcionamiento, velocidad y seguridad): correcciones       | ⏳ En curso                | #31 (seguridad)                                                              |
 | "Mis pedidos" para clientes con cuenta                                        | ✅                         | #25                                                                          |
 | SEO básico (`sitemap.xml`, `robots.txt`, datos estructurados)                 | ✅                         | #26                                                                          |
 | Mantenimiento: ESLint 10, `e2e` obligatorio en Rulesets, limpieza de carritos | ⏳ Siguiente               | —                                                                            |
@@ -50,6 +51,14 @@ legales, "Mis pedidos" y SEO básico. Falta de este bloque: mantenimiento.
 (`orders.userId`). A propósito **no** incluye pedidos de invitado con el mismo correo: cualquiera
 puede registrar un correo ajeno y vería direcciones y teléfonos de otra persona.
 
+**Segunda auditoría (15 de noviembre de 2026).** Encontró una carrera que permitía quedarse con
+el panel de la dueña (corregida con el [ADR 0008](adr/0008-admin-activation-by-reset.md)), una
+redirección abierta después de ingresar, límites de pedidos y carritos que la limpieza de Better
+Auth reiniciaba, sesiones cerradas que seguían sirviendo fuera del panel y fechas imposibles
+aceptadas en el checkout. Todo eso se corrige en el PR #31. Siguen después: el encabezado en
+celulares, la velocidad (contador del carrito, páginas de producto) y la configuración de
+Dependabot en `main`.
+
 La promoción `dev → qa` más reciente fue la #20. Desde entonces `dev` acumula #18, #19, #1, #22,
 #23, #24, #25 y #26: conviene promover a `qa` al cerrar el bloque.
 
@@ -62,13 +71,13 @@ La promoción `dev → qa` más reciente fue la #20. Desde entonces `dev` acumul
 | Better Auth en lugar de Auth.js                                                  | [ADR 0003](adr/0003-better-auth.md)                   |
 | Pedidos por WhatsApp primero; Wompi detrás de `PaymentProvider`                  | [ADR 0004](adr/0004-whatsapp-first-payments.md)       |
 | Catálogo cacheado (`"use cache"`) y base de datos en el build                    | [ADR 0005](adr/0005-catalog-cache-and-db-at-build.md) |
-| Promoción a ADMIN solo probando el buzón, cerrando sesiones                      | [ADR 0006](adr/0006-admin-promotion.md)               |
+| El panel se activa solo con el enlace de «¿Olvidaste tu contraseña?»             | [ADR 0008](adr/0008-admin-activation-by-reset.md)     |
 | Previews en Vercel Hobby; `main` desactivado hasta el lanzamiento                | [ADR 0007](adr/0007-vercel-previews.md)               |
 | Prisma 7.10.1 estable (no la 8 RC); adaptador `pg` (portable)                    | [ADR 0001](adr/0001-stack.md), `docs/architecture.md` |
 | Variantes con precio propio; compra como invitado; correo + contraseña           | `docs/architecture.md` (modelo de datos)              |
 | Zonas de domicilio y disponibilidad en la base de datos (editables en el panel)  | `docs/architecture.md` (checkout)                     |
 | Calendario propio sin librerías (cliente y dueña)                                | `docs/architecture.md`                                |
-| Varios admins con `ADMIN_EMAILS` (lista)                                         | ADR 0006, `docs/architecture.md`                      |
+| Varios admins con `ADMIN_EMAILS` (lista)                                         | ADR 0008, `docs/architecture.md`                      |
 | Límites de intentos en base de datos (auth, checkout, carritos)                  | `docs/architecture.md` (autenticación)                |
 | Autorización de datos guardada como prueba (Ley 1581)                            | `docs/architecture.md` (legal)                        |
 | Datos de la dueña como valores de ejemplo, sin bloquear el trabajo               | `AGENTS.md`, `datos-pendientes-propietaria.md`        |

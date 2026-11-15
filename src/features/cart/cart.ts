@@ -42,7 +42,7 @@ async function guestCartId() {
 }
 
 /** Cart id for reading. Never creates anything (safe in Server Components). */
-async function findCartId(): Promise<string | null> {
+export async function findCartId(): Promise<string | null> {
   const session = await getSession();
   if (session) {
     const cart = await db.cart.findUnique({

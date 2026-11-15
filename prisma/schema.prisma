@@ -104,6 +104,19 @@ model RateLimit {
   @@map("rate_limits")
 }
 
+/// Counters for the store's own limits (orders, guest carts), one row per client and time
+/// window. Kept apart from Better Auth's `rate_limits`: its cleanup deletes every row older
+/// than its own (much shorter) windows, which silently reset ours.
+model RateLimitBucket {
+  /// "<limit>:<client>:<window number>"
+  key       String   @id
+  count     Int      @default(1)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+  @@map("rate_limit_buckets")
+}
+
 // ---------------------------------------------------------------------------
 // Catalog
 // ---------------------------------------------------------------------------

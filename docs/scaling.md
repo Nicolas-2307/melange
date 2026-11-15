@@ -29,7 +29,7 @@ entorno.
 | GitHub     | Free (repo público) | $0    | Rulesets y secret scanning gratis en repos públicos                                                                       |
 
 **No sirve para vender:** Vercel Hobby prohíbe el uso comercial, y en producción hace falta un
-correo real (verificación de cuenta del admin, confirmaciones de pedido).
+correo real (enlace para activar el panel, confirmaciones de pedido).
 
 ## Etapa 1 · Primeras ventas
 
@@ -61,7 +61,7 @@ correo real (verificación de cuenta del admin, confirmaciones de pedido).
    `NEXT_PUBLIC_WHATSAPP_NUMBER` del negocio, `ADMIN_EMAILS` de la dueña.
 7. Quitar `"main": false` de `vercel.json` (PR a `dev` → `qa` → `main`): desde ahí `main`
    despliega a producción.
-8. Probar en producción: registro de la dueña + verificación de correo (rol ADMIN), un pedido de
+8. Probar en producción: activación de la dueña con «¿Olvidaste tu contraseña?» (rol ADMIN), un pedido de
    prueba completo, y cancelarlo desde el panel.
 
 ## Etapa 2 · Crecimiento
