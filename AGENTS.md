@@ -65,10 +65,16 @@ Antes de dar una tarea por terminada: `npm run lint && npm run typecheck && npm 
   `<Suspense fallback={<AdminSkeleton />}>` + componente async.
 - **Autorización:** `requireAdmin()` en **cada** página y server action del panel (no basta el
   layout ni `proxy.ts`); `requireUser(next)` en páginas de cliente con cuenta.
+- **Administradoras:** el rol ADMIN solo se activa con el enlace de «¿Olvidaste tu contraseña?»
+  para un correo de `ADMIN_EMAILS` (ADR 0008). No agregues otro camino hacia ADMIN ni reactives
+  rutas de `disabledPaths` en `auth.ts` sin revisar ese ADR.
 - Después de ingresar, registrarse o salir, navegar con recarga completa
   (`window.location.assign`), para que todo el árbol vea la nueva sesión.
 - Acciones públicas que crean registros (pedidos, carritos…) llevan límite de intentos con
-  `consumeRateLimit` (`src/lib/rate-limit.ts`, activo en producción).
+  `consumeRateLimit` (`src/lib/rate-limit.ts`, activo en producción). No reutilices la tabla
+  `rate_limits`: es de Better Auth y su limpieza borra filas ajenas.
+- Fechas que llegan del cliente: validar con `isRealDay` (JavaScript convierte "31 de abril" en
+  1 de mayo sin avisar). Nombres de personas: esquema `personName`.
 - Donde se recolecten datos personales, casilla obligatoria `PrivacyConsent` y guardar la
   prueba de la autorización (Ley 1581 de 2012).
 - Tras cambiar `prisma/schema.prisma`: migración (`npm run db:migrate`, o `migrate diff` +

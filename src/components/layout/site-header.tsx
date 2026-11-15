@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { AccountMenu } from "@/components/layout/account-menu";
 import { SignOutButton } from "@/features/auth/components/sign-out-button";
 import { getSession } from "@/features/auth/session";
-import { getCart } from "@/features/cart/cart";
+import { getCartItemCount } from "@/features/cart/cart";
 
 export function SiteHeader() {
   return (
@@ -27,8 +28,7 @@ export function SiteHeader() {
 }
 
 async function CartLinkWithCount() {
-  const { itemCount } = await getCart();
-  return <CartLink count={itemCount} />;
+  return <CartLink count={await getCartItemCount()} />;
 }
 
 /** Without `count` (while the cart loads) the badge is hidden. */
@@ -75,28 +75,33 @@ async function UserMenu() {
     );
   }
 
+  const isAdmin = session.user.role === "ADMIN";
   return (
     <>
-      <span className="hidden text-zinc-600 sm:inline dark:text-zinc-400">
-        Hola, {session.user.name}
-      </span>
-      {session.user.role === "ADMIN" && (
+      {/* Phones: everything behind one button, or the header overflows the screen. */}
+      <div className="sm:hidden">
+        <AccountMenu name={session.user.name} isAdmin={isAdmin} />
+      </div>
+      <div className="hidden items-center gap-2 sm:flex">
+        <span className="max-w-40 truncate text-zinc-600 dark:text-zinc-400">
+          Hola, {session.user.name}
+        </span>
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="rounded-lg px-3 py-2 font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          >
+            Panel
+          </Link>
+        )}
         <Link
-          href="/admin"
-          className="rounded-lg px-2 py-2 font-medium hover:bg-zinc-100 sm:px-3 dark:hover:bg-zinc-800"
+          href="/cuenta/pedidos"
+          className="rounded-lg px-3 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         >
-          Panel
+          Mis pedidos
         </Link>
-      )}
-      <Link
-        href="/cuenta/pedidos"
-        className="rounded-lg px-2 py-2 hover:bg-zinc-100 sm:px-3 dark:hover:bg-zinc-800"
-      >
-        {/* "Mis pedidos" doesn't fit next to the rest of the menu on phones. */}
-        <span className="sm:hidden">Pedidos</span>
-        <span className="hidden sm:inline">Mis pedidos</span>
-      </Link>
-      <SignOutButton />
+        <SignOutButton />
+      </div>
     </>
   );
 }

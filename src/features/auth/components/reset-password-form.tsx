@@ -11,7 +11,7 @@ import { authClient } from "../client";
 import { authErrorMessage } from "../errors";
 import { fieldErrors, resetPasswordSchema } from "../schemas";
 
-/** Reached from the email link: Better Auth redirects here with ?token=… or ?error=INVALID_TOKEN. */
+/** Reached from the email link, which carries ?token=… (an invalid one is reported on submit). */
 export function ResetPasswordForm() {
   const params = useSearchParams();
   const token = params.get("token");

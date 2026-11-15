@@ -17,12 +17,19 @@ async function sql(query: string, params: unknown[] = []) {
   }
 }
 
-const email = `duena-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@${TEST_DOMAIN}`;
+const unique = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+const email = `duena-${unique()}@${TEST_DOMAIN}`;
+// The replay test runs in parallel with the first one: it gets its own accounts and day.
+const replayAdminEmail = `duena-replay-${unique()}@${TEST_DOMAIN}`;
+const replayCustomerEmail = `cliente-replay-${unique()}@${TEST_DOMAIN}`;
+const REPLAY_REASON = `e2e-replay-${unique()}`;
 
 test.afterAll(async () => {
   await sql(`DELETE FROM orders WHERE "customerEmail" = $1`, [email]);
-  await sql(`DELETE FROM users WHERE email = $1`, [email]);
-  await sql(`DELETE FROM blocked_dates WHERE reason = $1`, [BLOCK_REASON]);
+  await sql(`DELETE FROM users WHERE email = ANY($1)`, [
+    [email, replayAdminEmail, replayCustomerEmail],
+  ]);
+  await sql(`DELETE FROM blocked_dates WHERE reason = ANY($1)`, [[BLOCK_REASON, REPLAY_REASON]]);
 });
 
 test.beforeEach(async ({ page }) => {
@@ -35,16 +42,16 @@ const visibleText = (page: Page, text: string) =>
   page.getByText(text, { exact: true }).filter({ visible: true });
 
 /** Signs up and promotes the account to ADMIN directly in the database (no email inbox in tests). */
-async function signUpAsAdmin(page: Page) {
+async function signUpAsAdmin(page: Page, address = email) {
   await page.goto("/registro");
   await page.getByLabel("Nombre").fill("Dueña Prueba");
-  await page.getByLabel("Correo").fill(email);
+  await page.getByLabel("Correo").fill(address);
   await page.getByLabel("Contraseña", { exact: true }).fill("clave-segura-123");
   await page.getByLabel("Confirmar contraseña").fill("clave-segura-123");
   await page.getByLabel(/Autorizo el tratamiento/).check();
   await page.getByRole("button", { name: "Crear cuenta" }).click();
   await expect(page.getByRole("button", { name: "Cerrar sesión" })).toBeVisible();
-  await sql(`UPDATE users SET role = 'ADMIN' WHERE email = $1`, [email]);
+  await sql(`UPDATE users SET role = 'ADMIN' WHERE email = $1`, [address]);
 }
 
 async function placePickupOrder(page: Page): Promise<string> {
@@ -112,9 +119,77 @@ test("la dueña gestiona un pedido y bloquea un día en su calendario", async ({
   await expect(page.getByRole("button", { name: "Bloquear día" })).toBeVisible();
 });
 
-test("un cliente no puede usar las acciones del panel", async ({ page }) => {
-  // Visiting the panel without the ADMIN role shows "not found" (covered in auth.spec.ts);
-  // here we check the calendar route is protected too.
+test("sin sesión, el calendario del panel envía a ingresar", async ({ page }) => {
   await page.goto("/admin/calendario");
   await expect(page).toHaveURL(/\/ingresar\?next=%2Fadmin%2Fcalendario/);
+});
+
+test("repetir una acción del panel sin ser la dueña no surte efecto", async ({
+  page,
+  browser,
+  baseURL,
+}) => {
+  await signUpAsAdmin(page, replayAdminEmail);
+
+  // Record the real request the panel sends when the owner blocks a day.
+  type Recorded = { url: string; headers: Record<string, string>; body: string };
+  const recorded: Recorded[] = [];
+  page.on("request", (request) => {
+    const headers = request.headers();
+    if (request.method() === "POST" && headers["next-action"]) {
+      recorded.push({ url: request.url(), headers, body: request.postData() ?? "" });
+    }
+  });
+  const far = new Date(Date.now() + 61 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  await page.goto(`/admin/calendario?mes=${far.slice(0, 7)}&dia=${far}`);
+  await page.getByLabel("Motivo (opcional)").fill(REPLAY_REASON);
+  await page.getByRole("button", { name: "Bloquear día" }).click();
+  await expect(page.getByText("Este día está")).toBeVisible();
+  await page.getByRole("button", { name: "Desbloquear día" }).click();
+  await expect(page.getByRole("button", { name: "Bloquear día" })).toBeVisible();
+  const blockDay = recorded.find((request) => request.body.includes(REPLAY_REASON));
+  expect(blockDay, "the block-day action was recorded").toBeTruthy();
+
+  const customer = await browser.newContext();
+  await customer.request.post("/api/auth/sign-up/email", {
+    headers: { origin: baseURL!, "x-forwarded-for": "10.201.0.9" },
+    data: {
+      name: "Cliente Curioso",
+      email: replayCustomerEmail,
+      password: "clave-segura-123",
+      privacyAccepted: true,
+    },
+  });
+  const cookieHeader = async (context: typeof customer) =>
+    (await context.cookies()).map((cookie) => `${cookie.name}=${cookie.value}`).join("; ");
+
+  const replay = async (cookie: string | null, origin = baseURL!) => {
+    const headers: Record<string, string> = {};
+    for (const [name, value] of Object.entries(blockDay!.headers)) {
+      const skip = ["cookie", "content-length", "host", "connection", "origin", "referer"];
+      if (!name.startsWith(":") && !skip.includes(name)) headers[name] = value;
+    }
+    const response = await fetch(blockDay!.url, {
+      method: "POST",
+      redirect: "manual",
+      headers: { ...headers, origin, ...(cookie ? { cookie } : {}) },
+      body: blockDay!.body,
+    });
+    await response.text();
+  };
+  const dayIsBlocked = async () =>
+    (await sql(`SELECT 1 FROM blocked_dates WHERE reason = $1`, [REPLAY_REASON])).rowCount === 1;
+
+  await replay(null);
+  expect(await dayIsBlocked(), "without a session").toBe(false);
+  await replay(await cookieHeader(customer));
+  expect(await dayIsBlocked(), "as a customer").toBe(false);
+  await replay(await cookieHeader(page.context()), "https://evil.example");
+  expect(await dayIsBlocked(), "owner's cookies sent from another site").toBe(false);
+
+  // The same request does work for the owner: the checks above are not passing by accident.
+  await replay(await cookieHeader(page.context()));
+  expect(await dayIsBlocked(), "as the owner").toBe(true);
+
+  await customer.close();
 });

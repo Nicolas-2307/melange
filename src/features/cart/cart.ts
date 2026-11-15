@@ -42,7 +42,7 @@ async function guestCartId() {
 }
 
 /** Cart id for reading. Never creates anything (safe in Server Components). */
-async function findCartId(): Promise<string | null> {
+export async function findCartId(): Promise<string | null> {
   const session = await getSession();
   if (session) {
     const cart = await db.cart.findUnique({
@@ -105,16 +105,35 @@ export async function takeGuestCart() {
   };
 }
 
+/** Only what is still on sale counts: the same rule for the cart page and the header badge. */
+const onSale = { isActive: true, product: { isActive: true, category: { isActive: true } } };
+
+/**
+ * Units in the visitor's cart, for the header badge. The header is on every page, so this is
+ * a single query (a sum) instead of loading every line with its product, category and image.
+ */
+export async function getCartItemCount(): Promise<number> {
+  const session = await getSession();
+  const guestId = session ? undefined : await guestCartId();
+  if (!session && !guestId) return 0;
+
+  const { _sum } = await db.cartItem.aggregate({
+    _sum: { quantity: true },
+    where: {
+      cart: session ? { userId: session.user.id } : { id: guestId, userId: null },
+      variant: onSale,
+    },
+  });
+  return _sum.quantity ?? 0;
+}
+
 /** Cart contents with current prices. Items whose product/variant is no longer sold are hidden. */
 export async function getCart(): Promise<CartView> {
   const cartId = await findCartId();
   if (!cartId) return EMPTY_CART;
 
   const items = await db.cartItem.findMany({
-    where: {
-      cartId,
-      variant: { isActive: true, product: { isActive: true, category: { isActive: true } } },
-    },
+    where: { cartId, variant: onSale },
     orderBy: { createdAt: "asc" },
     select: {
       id: true,
