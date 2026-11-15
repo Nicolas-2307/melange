@@ -36,7 +36,7 @@ propietaria** (ver [datos-pendientes-propietaria.md](datos-pendientes-propietari
 | Auditoría de seguridad + correcciones                                         | ✅                         | #22 (pendientes en [#21](https://github.com/Nicolas-2307/melange/issues/21)) |
 | Recuperar contraseña                                                          | ✅                         | #22                                                                          |
 | Páginas legales (plantillas) + autorización de datos                          | ✅                         | #23                                                                          |
-| Segunda auditoría (funcionamiento, velocidad y seguridad): correcciones       | ⏳ En curso                | #31 (seguridad)                                                              |
+| Segunda auditoría (funcionamiento, velocidad y seguridad): correcciones       | ✅                         | #31 (seguridad), #32 (encabezado en celulares), #33 (velocidad)              |
 | "Mis pedidos" para clientes con cuenta                                        | ✅                         | #25                                                                          |
 | SEO básico (`sitemap.xml`, `robots.txt`, datos estructurados)                 | ✅                         | #26                                                                          |
 | Mantenimiento: ESLint 10, `e2e` obligatorio en Rulesets, limpieza de carritos | ⏳ Siguiente               | —                                                                            |
@@ -51,16 +51,23 @@ legales, "Mis pedidos" y SEO básico. Falta de este bloque: mantenimiento.
 (`orders.userId`). A propósito **no** incluye pedidos de invitado con el mismo correo: cualquiera
 puede registrar un correo ajeno y vería direcciones y teléfonos de otra persona.
 
-**Segunda auditoría (15 de noviembre de 2026).** Encontró una carrera que permitía quedarse con
-el panel de la dueña (corregida con el [ADR 0008](adr/0008-admin-activation-by-reset.md)), una
-redirección abierta después de ingresar, límites de pedidos y carritos que la limpieza de Better
-Auth reiniciaba, sesiones cerradas que seguían sirviendo fuera del panel y fechas imposibles
-aceptadas en el checkout. Todo eso se corrige en el PR #31. Siguen después: el encabezado en
-celulares, la velocidad (contador del carrito, páginas de producto) y la configuración de
-Dependabot en `main`.
+**Segunda auditoría (15 de noviembre de 2026).** Revisó funcionamiento, velocidad y seguridad
+contra un build de producción local. Lo que encontró y ya está corregido:
+
+- **Seguridad (#31):** una carrera permitía quedarse con el panel de la dueña (rediseño en el
+  [ADR 0008](adr/0008-admin-activation-by-reset.md)); redirección abierta después de ingresar;
+  límites de pedidos y carritos que la limpieza de Better Auth reiniciaba; sesiones cerradas
+  que seguían sirviendo fuera del panel; fechas imposibles aceptadas en el checkout; nombres
+  sin validar en el servidor. El rediseño pasó por una revisión independiente que encontró un
+  hueco más (enlaces emitidos antes de listar el correo), también cerrado.
+- **Funcionamiento (#32):** el encabezado se desbordaba en celulares con la sesión iniciada
+  (ahora hay un menú «Cuenta»); una prueba e2e repite una acción real del panel sin ser la
+  dueña.
+- **Velocidad (#33):** el contador del carrito del encabezado pasó de 6 consultas a 1 por
+  página; las páginas de producto y categoría se generan en el build.
 
 La promoción `dev → qa` más reciente fue la #20. Desde entonces `dev` acumula #18, #19, #1, #22,
-#23, #24, #25 y #26: conviene promover a `qa` al cerrar el bloque.
+#23, #24, #25, #26 y las correcciones de la auditoría (#31 a #33).
 
 ## Decisiones tomadas
 
@@ -112,12 +119,15 @@ producto (`src/features/catalog/seo.ts`). Con el dominio real basta definir
 ## Siguiente paso exacto
 
 1. Actualizar `dev` local (`git switch dev` y `git pull`) y reiniciar `npm run dev`.
-2. Crear `chore/maintenance` desde `dev`:
+2. **Decisión del desarrollador:** Dependabot lee su configuración de la rama por defecto
+   (`main`), que no tiene las reglas `ignore` de `dev`; por eso abre PRs de versiones mayores.
+   Opciones: llevar solo `.github/dependabot.yml` a `main` con un PR, o cambiar la rama por
+   defecto del repositorio a `dev`.
+3. Crear `chore/maintenance` desde `dev`:
    - limpieza de carritos de invitado viejos (p. ej. sin cambios en 30 días) con un Vercel Cron
      protegido por `CRON_SECRET` (variable nueva en `env.ts`, `.env.example` y
      `docs/deployment.md`); verificar límites del plan Hobby en la documentación actual;
-   - evaluar ESLint 10 con `eslint-config-next` (subir solo si es compatible);
    - pedir al desarrollador marcar `e2e` como check obligatorio en los Rulesets (lo hace él en
      GitHub).
-3. Después: promoción `dev → qa` (merge commit) y revisar pendientes de
-   [#21](https://github.com/Nicolas-2307/melange/issues/21).
+4. Revisar los pendientes de [#21](https://github.com/Nicolas-2307/melange/issues/21) (CSP con
+   nonce, captcha, enumeración en el registro, carrera del cupo diario).
